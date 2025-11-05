@@ -1,1 +1,553 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Serenity Web — Simulateur de Cashflow (MVP)</title>
+  <meta name="description" content="Projetez votre cash à 90 jours ou 12 mois. Indicateurs: taux d’endettement, reste à vivre, taux d’épargne.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{--brand:#0b2545}
+    html,body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:1.25rem;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .kpi-label{font-size:.75rem;color:#64748b}
+    .kpi-value{font-size:1.35rem;font-weight:800}
+    .chip{border:1px solid #e5e7eb;border-radius:9999px;padding:.4rem .8rem;font-size:.85rem}
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <!-- Header -->
+  <header class="border-b border-slate-200 bg-white/80 backdrop-blur">
+    <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-[color:var(--brand)]"></div>
+        <span class="font-semibold">Serenity <span class="text-slate-500">Web</span></span>
+      </div>
+      <nav class="text-sm hidden sm:flex gap-6">
+        <a href="#simulateur" class="hover:underline">Simulateur</a>
+        <a href="#projection" class="hover:underline">Projection</a>
+        <a href="#faq" class="hover:underline">FAQ</a>
+      </nav>
+      <a href="#simulateur" class="px-3 py-2 rounded-xl bg-[color:var(--brand)] text-white text-sm">Essayer maintenant</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="max-w-6xl mx-auto px-5 py-12 md:py-16">
+    <div class="grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <h1 class="text-3xl md:text-5xl font-extrabold leading-tight">
+          Votre finance, claire et sereine.
+        </h1>
+        <p class="mt-4 text-slate-600">
+          Projetez <strong>90 jours</strong> ou <strong>12 mois</strong> en 1 minute. Taux d’endettement, reste à vivre, taux d’épargne — <em>calcul 100% local, sans inscription</em>.
+        </p>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a href="#simulateur" class="px-4 py-3 rounded-2xl bg-[color:var(--brand)] text-white font-semibold">Lancer le simulateur</a>
+          <a href="#projection" class="px-4 py-3 rounded-2xl bg-white border border-slate-200">Voir un exemple</a>
+        </div>
+        <p class="mt-3 text-xs text-slate-500">Pas de collecte bancaire • Gratuit • Export mail</p>
+      </div>
+      <div class="card p-6">
+        <div class="aspect-video rounded-2xl bg-gradient-to-br from-slate-100 to-white grid place-items-center text-slate-500">
+          Graphiques solde & revenus/dépenses
+        </div>
+        <p class="mt-4 text-sm text-slate-600">
+          La version Pro permet d’enregistrer plusieurs scénarios, d’obtenir des alertes e-mail et d’exporter vos projections en PDF.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Simulateur -->
+  <section id="simulateur" class="max-w-6xl mx-auto px-5 py-8 grid lg:grid-cols-2 gap-8">
+    <!-- Paramètres -->
+    <div class="card p-6">
+      <h2 class="text-xl font-bold">Vos paramètres</h2>
+      <p class="text-sm text-slate-600">Renseignez un solde initial et vos flux récurrents.</p>
+
+      <div class="mt-4 grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm text-slate-600 mb-1">Solde initial</label>
+          <input id="base" type="number" class="w-full border rounded-xl p-2" value="0" step="0.01">
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-1">Devise</label>
+          <select id="currency" class="w-full border rounded-xl p-2">
+            <option value="$">$</option>
+            <option value="€">€</option>
+            <option value="C$">C$</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-2 gap-3 items-center">
+        <div>
+          <label class="block text-sm text-slate-600 mb-1">Horizon</label>
+          <div class="flex items-center gap-2">
+            <input type="radio" name="hmode" id="mode90" value="90" checked>
+            <label for="mode90" class="text-sm">90 jours</label>
+            <input type="radio" name="hmode" id="mode365" value="365" class="ml-4">
+            <label for="mode365" class="text-sm">12 mois</label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm text-slate-600 mb-1">Horizon (jours)</label>
+          <input id="horizon" type="number" class="w-full border rounded-xl p-2" value="90" min="30" max="365">
+          <p class="text-[11px] text-slate-500 mt-1">Basculer 90j/12m ajuste automatiquement.</p>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="font-semibold">Lignes de revenus/dépenses</h3>
+          <button id="addRow" class="text-sm px-3 py-1 rounded-lg bg-slate-900 text-white">+ Ajouter</button>
+        </div>
+        <div class="grid grid-cols-12 gap-2 text-[12px] text-slate-500">
+          <div class="col-span-2">Type</div>
+          <div class="col-span-2">Montant</div>
+          <div class="col-span-3">Récurrence</div>
+          <div class="col-span-3">Catégorie</div>
+          <div class="col-span-2">Début</div>
+        </div>
+        <div id="rows" class="space-y-3 mt-1"></div>
+        <p class="mt-2 text-xs text-slate-500">Catégories: <strong>Fixe</strong> (loyer, assurances), <strong>Variable</strong> (courses, loisirs), <strong>Crédit</strong> (mensualité).</p>
+      </div>
+
+      <div class="mt-6 flex flex-wrap gap-2">
+        <button id="compute" class="px-4 py-3 rounded-2xl bg-emerald-600 text-white font-semibold">Calculer ma projection</button>
+        <button id="resetScn" class="px-4 py-3 rounded-2xl bg-white border">Réinitialiser</button>
+      </div>
+
+    <!-- Différents scénarios -->  
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="text-sm text-slate-600 mr-2">Scénarios rapides :</span>
+        <button class="chip" data-scn="var-10">−10% variables</button>
+        <button class="chip" data-scn="rev+200">+200 / mois revenus</button>
+        <button class="chip" data-scn="cred+300">+300 / mois crédit</button>
+      </div>
+    </div>
+
+    <!-- Indicateurs -->
+    <div class="card p-6">
+      <h2 class="text-xl font-bold">Indicateurs</h2>
+      <div class="grid sm:grid-cols-3 gap-3 mt-3">
+        <div class="p-4 rounded-2xl bg-slate-50">
+          <div class="kpi-label">Taux d’endettement</div>
+          <div id="kpiDebt" class="kpi-value">—</div>
+          <div class="text-xs text-slate-500 mt-1">Idéal &lt; 35%</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-slate-50">
+          <div class="kpi-label">Reste à vivre (mensuel)</div>
+          <div id="kpiRav" class="kpi-value">—</div>
+          <div class="text-xs text-slate-500 mt-1">Après charges fixes & variables</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-slate-50">
+          <div class="kpi-label">Taux d’épargne</div>
+          <div id="kpiSave" class="kpi-value">—</div>
+          <div class="text-xs text-slate-500 mt-1">Objectif 10–20%/mois</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 text-center mt-6">
+        <div class="p-4 rounded-2xl bg-emerald-50">
+          <div class="text-xs text-slate-600">M+1</div>
+          <div id="m1" class="text-2xl font-extrabold">—</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-amber-50">
+          <div class="text-xs text-slate-600">M+6</div>
+          <div id="m6" class="text-2xl font-extrabold">—</div>
+        </div>
+        <div class="p-4 rounded-2xl bg-rose-50">
+          <div class="text-xs text-slate-600">M+12</div>
+          <div id="m12" class="text-2xl font-extrabold">—</div>
+        </div>
+      </div>
+
+      <p id="alert" class="mt-4 text-sm"></p>
+
+      <div class="mt-6 grid gap-3 sm:grid-cols-2">
+        <a id="mailtoCta" href="#" class="text-center px-4 py-3 rounded-2xl bg-[color:var(--brand)] text-white font-semibold">
+          Recevoir ma projection par e-mail
+        </a>
+        <a href="https://www.etsy.com/ca-fr/listing/1766882287/previsionnel-comptable-bilan" class="text-center px-4 py-3 rounded-2xl bg-white border border-slate-200">
+          📥 Télécharger Serenity Files (Attention ceci est la version Excel Brut du projet Serenity Web)
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Projection -->
+  <section id="projection" class="max-w-6xl mx-auto px-5 py-8 grid lg:grid-cols-2 gap-8">
+    <div class="card p-6">
+      <h3 class="text-lg font-semibold">Solde projeté</h3>
+      <canvas id="chartLine" class="mt-4"></canvas>
+    </div>
+    <div class="card p-6">
+      <h3 class="text-lg font-semibold">Revenus vs Dépenses (par mois)</h3>
+      <canvas id="chartBars" class="mt-4"></canvas>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="faq" class="max-w-6xl mx-auto px-5 py-8">
+    <h3 class="text-xl font-bold">FAQ rapide</h3>
+    <div class="mt-4 grid md:grid-cols-2 gap-4">
+      <div class="card p-4">
+        <p class="font-semibold">Mes données sont-elles stockées ?</p>
+        <p class="text-sm text-slate-600 mt-1">Non. Tout est calculé dans votre navigateur. Pas de compte, pas de base de données.</p>
+      </div>
+      <div class="card p-4">
+        <p class="font-semibold">Puis-je enregistrer un scénario ?</p>
+        <p class="text-sm text-slate-600 mt-1">Pas dans ce MVP. La version Pro proposera la sauvegarde et les alertes par e-mail.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="mt-10 border-t">
+    <div class="max-w-6xl mx-auto px-5 py-8 text-sm text-slate-600 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+      <div>© Serenity Web — un projet BuildToSolve</div>
+      <a href="mailto:sinlocka@gmail.com" class="underline">sinlocka@gmail.com</a>
+    </div>
+  </footer>
+
+  <!-- Logiciel client -->
+  <script>
+    // ------- Utils -------
+    const el = s => document.querySelector(s);
+    const fmt = (n, cur) => isFinite(n) ? `${cur}${Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}` : '—';
+    const today0 = () => { const d=new Date(); d.setHours(0,0,0,0); return d; };
+    const addDays = (d, n) => { const x=new Date(d); x.setDate(x.getDate()+n); return x; };
+    const endOfMonth = (d) => new Date(d.getFullYear(), d.getMonth()+1, 0);
+    const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+
+    // ------- Lignes dynamiques -------
+    const rows = el('#rows');
+    function lineRow(defaults = {}) {
+      const wrap = document.createElement('div');
+      wrap.className = "grid grid-cols-12 gap-2 items-end";
+      wrap.innerHTML = `
+        <select class="col-span-2 border rounded-xl p-2 type">
+          <option value="income">Revenu</option>
+          <option value="expense">Dépense</option>
+        </select>
+        <input class="col-span-2 border rounded-xl p-2 amount" type="number" placeholder="Montant" step="0.01">
+        <select class="col-span-3 border rounded-xl p-2 rec">
+          <option value="oneoff">Ponctuel</option>
+          <option value="weekly">Hebdo</option>
+          <option value="monthly" selected>Mensuel</option>
+          <option value="quarterly">Trimestriel</option>
+          <option value="yearly">Annuel</option>
+        </select>
+        <select class="col-span-3 border rounded-xl p-2 cat">
+          <option value="fixed">Fixe</option>
+          <option value="variable">Variable</option>
+          <option value="credit">Crédit</option>
+        </select>
+        <input class="col-span-2 border rounded-xl p-2 start" type="date">
+      `;
+      // defaults
+      if (defaults.type) wrap.querySelector('.type').value = defaults.type;
+      if (defaults.amount!=null) wrap.querySelector('.amount').value = defaults.amount;
+      if (defaults.rec) wrap.querySelector('.rec').value = defaults.rec;
+      if (defaults.cat) wrap.querySelector('.cat').value = defaults.cat;
+      if (defaults.start) wrap.querySelector('.start').value = defaults.start;
+      return wrap;
+    }
+    el('#addRow').onclick = () => rows.appendChild(lineRow());
+
+    // Pré-remplissage léger
+    rows.appendChild(lineRow({type:"income", amount:2500, rec:"monthly", cat:"fixed"}));
+    rows.appendChild(lineRow({type:"expense", amount:1200, rec:"monthly", cat:"fixed"}));
+    rows.appendChild(lineRow({type:"expense", amount:300, rec:"monthly", cat:"variable"}));
+
+    // ------- Projection par événements (jour/jour) -------
+    function generateEvents(entries, horizonDays, start){
+      const evts = [];
+      const end = addDays(start, horizonDays);
+      for (const e of entries){
+        const amt = parseFloat(e.amount || "0");
+        if (!amt || isNaN(amt)) continue;
+        const sign = e.type === 'income' ? +1 : -1;
+        let d = e.start ? new Date(e.start) : new Date(start);
+        if (d < start) d = new Date(start);
+        const rec = e.rec || 'monthly';
+        const push = (dt) => { if (dt <= end) evts.push({date:new Date(dt), delta: sign*amt}); };
+        if (rec === 'oneoff'){ push(d); }
+        else {
+          while (d <= end){
+            push(d);
+            if (rec === 'weekly') d.setDate(d.getDate()+7);
+            else if (rec === 'monthly') d.setMonth(d.getMonth()+1);
+            else if (rec === 'quarterly') d.setMonth(d.getMonth()+3);
+            else if (rec === 'yearly') d.setFullYear(d.getFullYear()+1);
+          }
+        }
+      }
+      evts.sort((a,b)=>a.date-b.date);
+      return evts;
+    }
+
+    function projectDaily(base, entries, horizonDays){
+      const start = today0();
+      const evts = generateEvents(entries, horizonDays, start);
+      const out = [];
+      let bal = base, i = 0;
+      for (let d=0; d<=horizonDays; d++){
+        const cur = addDays(start, d);
+        while (i<evts.length && evts[i].date.getTime()===cur.getTime()){
+          bal += evts[i].delta; i++;
+        }
+        out.push({date: cur, balance: Number(bal.toFixed(2))});
+      }
+      return out;
+    }
+
+    // ------- Agrégation mensuelle (à partir du daily sur 365j) -------
+    function aggregateMonthly(curve){
+      const months = {};
+      for (const p of curve){
+        const k = monthKey(p.date);
+        if (!months[k]) months[k] = {endDate: endOfMonth(p.date), endBalance: p.balance};
+        months[k].endBalance = p.balance;
+      }
+      // ordre chronologique
+      return Object.entries(months).map(([k,v])=>({key:k, endDate:v.endDate, endBalance:v.endBalance})).sort((a,b)=>a.endDate-b.endDate);
+    }
+
+    // Revenus vs Dépenses mensuels (approx à partir des entrées)
+    function monthlyTotals(entries){
+      const start = today0();
+      const labels = [];
+      const income = [];
+      const expense = [];
+      let d = new Date(start.getFullYear(), start.getMonth(), 1);
+      for (let m=0; m<12; m++){
+        const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+        const monthEnd = new Date(d.getFullYear(), d.getMonth()+1, 0);
+        let inc = 0, exp = 0;
+        for (const e of entries){
+          const amt = parseFloat(e.amount||"0");
+          if (!amt) continue;
+          const rec = e.rec||'monthly';
+          const typ = e.type;
+          const st = e.start ? new Date(e.start) : start;
+          // Approximations
+          let add = 0;
+          if (rec==='weekly') add = amt*4.345;
+          else if (rec==='monthly') add = amt;
+          else if (rec==='quarterly'){
+            if ((monthStart.getMonth()-st.getMonth()+12*(monthStart.getFullYear()-st.getFullYear()))%3===0 && monthStart>=new Date(st.getFullYear(), st.getMonth(),1)) add = amt;
+          } else if (rec==='yearly'){
+            if (monthStart.getMonth()===st.getMonth() && monthStart.getFullYear()>=st.getFullYear()) add = amt;
+          } else if (rec==='oneoff'){
+            const s = st;
+            if (s>=monthStart && s<=monthEnd) add = amt;
+          }
+          if (typ==='income') inc += add; else exp += add;
+        }
+        labels.push(`${monthStart.toLocaleString(undefined,{month:'short'})}`);
+        income.push(Number(inc.toFixed(2)));
+        expense.push(Number(exp.toFixed(2)));
+        d.setMonth(d.getMonth()+1);
+      }
+      return {labels, income, expense};
+    }
+
+    // ------- KPI mensuels (estimation à partir des entrées) -------
+    function monthlyKpis(entries, currency){
+      let inc=0, fix=0, vari=0, cred=0;
+      for (const e of entries){
+        const amt = parseFloat(e.amount||"0");
+        if (!amt) continue;
+        const factor = (e.rec==='weekly') ? 4.345 :
+                       (e.rec==='monthly' || !e.rec) ? 1 :
+                       (e.rec==='quarterly') ? 1/3 :
+                       (e.rec==='yearly') ? 1/12 :
+                       0; // oneoff non pris dans KPI
+        const mAmt = amt*factor;
+        if (e.type==='income') inc += mAmt;
+        else {
+          if (e.cat==='fixed') fix += mAmt;
+          else if (e.cat==='credit') cred += mAmt;
+          else vari += mAmt;
+        }
+      }
+      const totalExp = fix + vari + cred;
+      const debtRatio = inc>0 ? ( (fix+cred)/inc ) : 0;
+      const resteAVivre = inc - (fix + vari + cred);
+      const saveRate = inc>0 ? Math.max(inc - totalExp, 0)/inc : 0;
+      return {
+        debtPct: Math.max(0, debtRatio*100),
+        reste: resteAVivre,
+        savePct: Math.max(0, saveRate*100),
+        inc, fix, vari, cred, totalExp
+      };
+    }
+
+    // ------- Scénarios rapides ------- (A revoir car non fonctionnel en l'état pour la mvp)
+    let scenario = { varMul: 1.0, extraIncome: 0, extraCredit: 0 };
+    function applyScenario(entries){
+      // clone + applique multiplicateurs/ajouts
+      const out = entries.map(e=>({...e}));
+      // -10% variables => varMul=0.9
+      if (scenario.varMul !== 1){
+        for (const e of out){
+          if (e.type==='expense' && e.cat==='variable'){
+            e.amount = (parseFloat(e.amount||"0")*scenario.varMul).toFixed(2);
+          }
+        }
+      }
+      // +200 revenu mensuel (A revoir car non fonctionnel en l'état pour la mvp)
+      if (scenario.extraIncome>0){
+        out.push({type:'income', amount: scenario.extraIncome, rec:'monthly', cat:'fixed', start: new Date().toISOString().slice(0,10)});
+      }
+      // +300 crédit (A revoir car non fonctionnel en l'état pour la mvp)
+      if (scenario.extraCredit>0){
+        out.push({type:'expense', amount: scenario.extraCredit, rec:'monthly', cat:'credit', start: new Date().toISOString().slice(0,10)});
+      }
+      return out;
+    }
+
+    // ------- Charts -------
+    let lineChart, barsChart;
+
+    function renderLine(curve){
+      const labels = curve.map(p=>p.date.toISOString().slice(0,10));
+      const values = curve.map(p=>p.balance);
+      if (lineChart) lineChart.destroy();
+      lineChart = new Chart(el('#chartLine'), {
+        type:'line',
+        data:{ labels, datasets:[{ label:'Solde projeté', data:values, tension:0.3 }] },
+        options:{ responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:false } } }
+      });
+    }
+
+    function renderBars(labels, income, expense){
+      if (barsChart) barsChart.destroy();
+      barsChart = new Chart(el('#chartBars'), {
+        type:'bar',
+        data:{
+          labels,
+          datasets:[
+            { label:'Revenus', data:income, stack:'stack1' },
+            { label:'Dépenses', data:expense.map(v=>-v), stack:'stack1' }
+          ]
+        },
+        options:{
+          responsive:true,
+          plugins:{ legend:{ position:'top' } },
+          scales:{
+            y:{ beginAtZero:true, ticks:{ callback:(v)=>v } }
+          }
+        }
+      });
+    }
+
+    // ------- Calcul principal -------
+    function collectEntries(){
+      return [...rows.children].map(r => ({
+        type: r.querySelector('.type').value,
+        amount: r.querySelector('.amount').value,
+        rec: r.querySelector('.rec').value,
+        cat: r.querySelector('.cat').value,
+        start: r.querySelector('.start').value
+      }));
+    }
+
+    function computeAll(){
+      const base = parseFloat(el('#base').value||'0');
+      const cur = el('#currency').value;
+      const modeDays = el('#mode365').checked ? 365 : 90;
+      el('#horizon').value = modeDays;
+
+      const rawEntries = collectEntries();
+      const entries = applyScenario(rawEntries);
+
+      // courbe journalière
+      const curve = projectDaily(base, entries, modeDays);
+
+      // KPIs
+      const k = monthlyKpis(entries, cur);
+      el('#kpiDebt').textContent = isFinite(k.debtPct) ? `${k.debtPct.toFixed(1)}%` : '—';
+      el('#kpiRav').textContent = fmt(k.reste, cur);
+      el('#kpiSave').textContent = isFinite(k.savePct) ? `${k.savePct.toFixed(1)}%` : '—';
+
+      // Alerte découvert
+      const firstNeg = curve.findIndex(p => p.balance < 0);
+      el('#alert').textContent = firstNeg === -1
+        ? "✅ Aucun risque de découvert détecté sur l’horizon choisi."
+        : `⚠️ Risque de découvert dans ${firstNeg} jours.`;
+
+      // Cartes M+1 / M+6 / M+12 (si horizon court, on prend max dispo)
+      const idx = d => Math.min(d, curve.length-1);
+      el('#m1').textContent = fmt(curve[idx(30)].balance, cur);
+      el('#m6').textContent = fmt(curve[idx(180)].balance, cur);
+      el('#m12').textContent = fmt(curve[idx(365)].balance, cur);
+
+      // Graphique ligne
+      renderLine(curve);
+
+      // Graphique barres: revenus vs dépenses par mois
+      const mt = monthlyTotals(entries);
+      renderBars(mt.labels, mt.income, mt.expense);
+
+      // Mailto récap
+      const d30 = curve[Math.min(30, curve.length-1)].balance;
+      const d60 = curve[Math.min(60, curve.length-1)].balance;
+      const d90 = curve[Math.min(90, curve.length-1)].balance;
+      const subject = encodeURIComponent("Projection cashflow — Serenity Web");
+      const body = encodeURIComponent(
+`Bonjour,
+Je viens de tester Serenity Web.
+
+Solde initial: ${cur}${base.toFixed(2)}
+Indicateurs mensuels:
+• Taux d’endettement: ${isFinite(k.debtPct)?k.debtPct.toFixed(1):'—'}%
+• Reste à vivre: ${fmt(k.reste, cur)}
+• Taux d’épargne: ${isFinite(k.savePct)?k.savePct.toFixed(1):'—'}%
+
+Projection (90j):
+• 30 jours: ${fmt(d30, cur)}
+• 60 jours: ${fmt(d60, cur)}
+• 90 jours: ${fmt(d90, cur)}
+${firstNeg === -1 ? "Aucun découvert prévu." : "Risque de découvert dans " + firstNeg + " jours."}
+
+Je souhaite être informé quand la version Pro (sauvegarde, alertes, PDF) sera disponible.
+Merci !`
+      );
+      el('#mailtoCta').href = `mailto:sinlocka@gmail.com?subject=${subject}&body=${body}`;
+    }
+
+    // ------- Events ------- (A revoir car non fonctionnel en l'état pour la mvp)
+    el('#compute').onclick = computeAll;
+    el('#resetScn').onclick = () => { scenario={varMul:1, extraIncome:0, extraCredit:0}; computeAll(); };
+    document.querySelectorAll('input[name="hmode"]').forEach(r => r.addEventListener('change', computeAll));
+    document.querySelectorAll('.chip').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const t = btn.dataset.scn;
+        if (t==='var-10') scenario.varMul = 0.9;
+        if (t==='rev+200') scenario.extraIncome = 200;
+        if (t==='cred+300') scenario.extraCredit = 300;
+        computeAll();
+      });
+    });
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', e=>{
+        const id = a.getAttribute('href');
+        if (id.length>1){ e.preventDefault(); document.querySelector(id).scrollIntoView({behavior:'smooth'}); }
+      });
+    });
+
+    // Auto-calc initial pour montrer un résultat local
+    computeAll();
+  </script>
+</body>
+</html>
 
