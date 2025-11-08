@@ -1,0 +1,90 @@
+================================================================= 1. Vision produit==================================================================
+
+Serenity Web aide les familles, freelances et solopreneurs à reprendre le contrôle de leur argent sans devoir comprendre Excel ou Notion.
+En quelques minutes, ils visualisent leur budget réel, leur score de stabilité financière, et peuvent planifier leur avenir.
+
+Positionnement :
+
+“Ton gardien de cashflow — simple, clair et motivant.”
+
+================================================================= 2. Objectifs business (v1 Beta)==================================================================
+
+Objectif              	                            Indicateur clé	                                          Cible
+
+1. Valider la traction	                         100 utilisateurs gratuits actifs	                          2 semaines
+2. Tester la conversion vers le plan Pro	       10 premiers paiements Stripe	                              1 mois
+3. Recueillir des feedbacks concrets	           30 réponses sur la pertinence du score	                    1 mois
+
+Si ces trois objectifs sont atteints → on passe à la V1 officielle (ajout comptes utilisateurs + projections sur 12 mois).
+
+================================================================= 3. Core features (MVP)==================================================================
+
+          Feature	                              Description	                                          Statut	                          Critère de validation
+
+1. Formulaire Budget Rapide	      Entrée des revenus, dépenses fixes et variables	                ✅ MVP actuel	                   calcul et affichage instantané
+2. Calcul du Score de Sérénité	  Formule pondérée (épargne, dettes, charges)	                    🧠 en test	              score cohérent pour 80 % des utilisateurs
+3. Dashboard Résultats	          Synthèse visuelle (barres + texte)	                            🟩 à finaliser	                  affichage clair et responsive
+4. Export PDF (Pro)	              Génération de rapport (WeasyPrint)	                            🟨 à intégrer	                       export complet et lisible
+5. Sauvegarde Snapshot (Pro)	    Enregistre le dernier budget sur cloud (SQLite)	                🟨 à faire	                          rechargement fonctionnel
+6. Feedback                       intégré	Mini-form “score juste / à ajuster ?”	                  🟨 à faire	                          feedback stocké ou envoyé
+
+================================================================= 4. Modèle économique (Beta)==================================================================
+                          Plan	                      Fonctionnalités	                                      Prix	                    Objectif
+
+                        Gratuit	                  Calcul + visualisation locale	                            0 €	                      acquisition
+                        Pro	                      Export PDF + sauvegarde cloud + clés illimitées	          4,99 $/mois	              monétisation
+                        Famille (plus tard)	      Multi-profils + historique	9,99 $/mois	upsell
+
+Paiement : Stripe Checkout
+Accès : via clé de licence unique (liée à l’email)
+Période d’essai : 7 jours gratuits (optionnelle)
+
+================================================================= 5. Parcours utilisateur (flow UX simplifié)=======================================================
+
+1.Page d’accueil → CTA “Commencer gratuitement”
+
+2.Formulaire → saisie revenus / dépenses
+
+3.Dashboard → affiche score + visualisation
+→ bouton “Exporter” (verrouillé Pro)
+
+4.Popup Pro → explication + lien Stripe
+
+5.Stripe Checkout → paiement
+
+6.Email reçu → clé de licence
+
+7.Saisie clé dans app → Pro débloqué
+
+8.Export PDF / Sauvegarde Snapshot
+
+9.Feedback : “Score cohérent ?”
+
+================================================================= 6. Métriques à suivre (dès bêta)==================================================================
+
+                      Catégorie	                                    Indicateur	                              Outil
+
+                    Acquisition	                            visiteurs uniques / CTA cliqué	                Plausible
+                    Engagement	                            budgets calculés / utilisateur	           localStorage tracking
+                    Conversion	                            clics “Débloquer Pro” → paiements	                Stripe
+                    Rétention	                              utilisateurs récurrents hebdo	                  logs SQLite
+                    Feedback	                              réponses “score juste / non”	                  API /feedback
+
+================================================================= 7. Tech Stack (confirmée)==================================================================
+
+                      Domaine	                                        Choix	                                      Justification
+
+                    Front	                                          HTML + HTMX	                              rapidité, zéro build
+                    Back	                                          FastAPI	                                  légèreté + Python natif
+                    DB	                                            SQLite	                                  simple, migrable vers Postgres
+                    PDF	                                            WeasyPrint	                              propre, sans dépendances web
+                    Paiement	                                      Stripe                                    Checkout	fiabilité, webhook direct
+                    Analytics	                                      Plausible	                                RGPD-friendly, léger
+
+================================================================= 8. Roadmap produit (v1 Beta publique)=============================================================
+
+                    Semaine	                                          Focus	                                                    Délivrable concret
+                      S1	                                      Core UX + API /calc              	                             dashboard fonctionnel
+                      S2	                                      Stripe + PDF + licence	                                       plan Pro opérationnel
+                      S3	                                      Feedback loop + polish	                                       retour utilisateurs
+                      S4	                                      Lancement public + suivi	                                     build in public + métriques
