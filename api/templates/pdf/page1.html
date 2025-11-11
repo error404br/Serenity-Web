@@ -1,1 +1,52 @@
-# Résumé + Score + KPI + mini-sparkline
+<div class="header">
+  <span class="brand-dot"></span>
+  <span style="font-weight:700">Serenity Web</span>
+</div>
+
+<h1 class="h1">Projection & Score de Sérénité</h1>
+<p class="small">
+  Devise&nbsp;: {{ meta.currency }} • Horizon&nbsp;: {{ meta.horizon_days }} jours • Généré le&nbsp;: {{ meta.generated_at }}
+</p>
+
+<div class="kpi mt-3" style="display:flex;gap:16px;align-items:center">
+  <div class="badge {{ summary.level }}">{{ summary.score }}/100</div>
+  <div style="font-size:11.5pt">{{ summary.message }}</div>
+</div>
+
+<div class="grid3 mt-3">
+  <div class="kpi">
+    <div class="small">Taux d’endettement</div>
+    <div style="font-size:16pt;font-weight:800">{{ '%.1f'|format(summary.kpi.debt_pct) }}%</div>
+    <div class="small">Idéal &lt; 35%</div>
+  </div>
+  <div class="kpi">
+    <div class="small">Reste à vivre (mensuel)</div>
+    <div style="font-size:16pt;font-weight:800">{{ fmt(summary.kpi.reste_a_vivre) }}</div>
+  </div>
+  <div class="kpi">
+    <div class="small">Taux d’épargne</div>
+    <div style="font-size:16pt;font-weight:800">{{ '%.1f'|format(summary.kpi.save_pct) }}%</div>
+  </div>
+</div>
+
+<div class="grid3 mt-3">
+  <div class="kpi">
+    <div class="small">M+1</div>
+    <div style="font-size:16pt;font-weight:800">{{ fmt(milestones.m1) }}</div>
+  </div>
+  <div class="kpi">
+    <div class="small">M+6</div>
+    <div style="font-size:16pt;font-weight:800">{{ fmt(milestones.m6) }}</div>
+  </div>
+  <div class="kpi">
+    <div class="small">M+12</div>
+    <div style="font-size:16pt;font-weight:800">{{ fmt(milestones.m12) }}</div>
+  </div>
+</div>
+
+<div class="mt-4">
+  {{ sparkline_svg|safe }}
+</div>
+
+<p class="footer">Bêta — document informatif. © BuildToSolve</p>
+
