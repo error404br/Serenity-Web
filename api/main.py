@@ -2,6 +2,9 @@
 
 from fastapi import FastAPI
 from routers import calc  # importe ton module /calc
+from routers import pdf_export  # + calc plus tard si pas déjà importé
+
+app.include_router(pdf_export.router, prefix="/api", tags=["export"])
 
 app = FastAPI(
     title="Serenity Web API",
