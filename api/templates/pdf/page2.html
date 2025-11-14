@@ -1,1 +1,43 @@
-# Détails + Tableaux par catégorie + Conseils
+<h2 class="h1" style="font-size:16pt">Détails & répartition</h2>
+
+<table class="table mt-3">
+  <tr><th>Revenus</th><td>{{ fmt(summary.kpi.inc) }}</td></tr>
+  <tr><th>Dépenses totales</th><td>{{ fmt(summary.kpi.total_exp) }}</td></tr>
+  <tr><th>Fixe</th><td>{{ fmt(summary.kpi.fix) }}</td></tr>
+  <tr><th>Variable</th><td>{{ fmt(summary.kpi.vari) }}</td></tr>
+  <tr><th>Crédit</th><td>{{ fmt(summary.kpi.cred) }}</td></tr>
+  <tr><th>Solde mensuel estimé</th><td>{{ fmt(summary.kpi.inc - summary.kpi.total_exp) }}</td></tr>
+</table>
+
+<h3 class="mt-4" style="font-weight:700">Répartition par catégorie</h3>
+{% set total_exp = summary.kpi.total_exp if summary.kpi.total_exp>0 else 1 %}
+{% for item in breakdown.by_category %}
+  {% set pct = (item.amount / total_exp) * 100 %}
+  <div style="display:flex;align-items:center;gap:8px;margin:6px 0">
+    <div style="width:100px;color:#64748b">{{ item.label }}</div>
+    <div class="meter" style="flex:1"><span style="width:{{ '%.1f'|format(pct) }}%"></span></div>
+    <div style="width:100px;text-align:right">{{ fmt(item.amount) }}</div>
+  </div>
+{% endfor %}
+
+<h3 class="mt-4" style="font-weight:700">Répartition par récurrence</h3>
+{% set total_rec = 0 %}
+{% for it in breakdown.by_recurring %}{% set total_rec = total_rec + it.amount %}{% endfor %}
+{% set total_rec = total_rec if total_rec>0 else 1 %}
+{% for item in breakdown.by_recurring %}
+  {% set pct = (item.amount / total_rec) * 100 %}
+  <div style="display:flex;align-items:center;gap:8px;margin:6px 0">
+    <div style="width:100px;color:#64748b">{{ item.label }}</div>
+    <div class="meter" style="flex:1"><span style="width:{{ '%.1f'|format(pct) }}%"></span></div>
+    <div style="width:100px;text-align:right">{{ fmt(item.amount) }}</div>
+  </div>
+{% endfor %}
+
+{% if tips and tips|length>0 %}
+  <h3 class="mt-4" style="font-weight:700">Conseils personnalisés</h3>
+  <ol style="margin-top:6px">
+  {% for t in tips %}<li>{{ t }}</li>{% endfor %}
+  </ol>
+{% endif %}
+
+<p class="footer">{{ disclaimer }}</p>
