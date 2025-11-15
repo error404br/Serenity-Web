@@ -26,7 +26,7 @@
     <div class="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 rounded-xl bg-[color:var(--brand)]"></div>
-        <span class="font-semibold">Serenity Web <span class="text-slate-500">VERSION PDF BETA ACTIVE</span></span>
+        <span class="font-semibold">Serenity <span class="text-slate-500">Web</span></span>
       </div>
       <nav class="text-sm hidden sm:flex gap-6">
         <a href="#simulateur" class="hover:underline">Simulateur</a>
@@ -187,7 +187,7 @@
           🔒 Exporter en PDF (beta)
         </button>
         <p class="text-xs text-slate-500 mt-1">
-          Pour l’instant ouvert à tous pour test local. En bêta publique, ce bouton sera réservé aux comptes Pro.
+          Pour l’instant ouvert à tous pour test. En bêta publique, ce bouton sera réservé aux comptes Pro.
         </p>
       </div>
 
@@ -245,6 +245,19 @@
       const sign = n < 0 ? '-' : '';
       return `${sign}${cur}${Math.abs(Number(n)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
     };
+
+    // ================== CONFIG API ==================
+    const API_BASE = (()=>{
+      const host = window.location.hostname;
+
+      // Dev local
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://127.0.0.1:8000';
+      }
+
+      // Prod Render
+      return 'https://serenity-web-api.onrender.com';
+    })();
 
     // ================ State (localStorage) ================
     const LS_KEY = 'serenityweb_state_v1';
@@ -320,7 +333,6 @@
 
     function applyScenario(entries){
       const out = entries.map(e=>({...e}));
-      // variables * multiplicateur
       if (scenario.varMul !== 1){
         for (const e of out){
           if (e.type==='expense' && e.cat==='variable'){
@@ -329,11 +341,9 @@
           }
         }
       }
-      // extra revenus mensuels
       if (scenario.extraIncome>0){
         out.push({type:'income', amount: scenario.extraIncome, rec:'monthly', cat:'fixed', start: new Date().toISOString().slice(0,10)});
       }
-      // extra crédit mensuel
       if (scenario.extraCredit>0){
         out.push({type:'expense', amount: scenario.extraCredit, rec:'monthly', cat:'credit', start: new Date().toISOString().slice(0,10)});
       }
@@ -347,7 +357,7 @@
       if (scenario.extraCredit === 300) el('[data-scn="cred+300"]')?.classList.add('active');
     }
 
-    // ================ Projection par événements (jour/jour) ================
+    // ================ Projection (jour/jour) ================
     function generateEvents(entries, horizonDays, start){
       const evts = [];
       const end = addDays(start, horizonDays);
@@ -410,7 +420,7 @@
           st.setHours(0,0,0,0);
 
           let add = 0;
-          if (rec==='weekly') add = amt*4.333;        // ~52/12
+          if (rec==='weekly') add = amt*4.333;
           else if (rec==='monthly') add = amt;
           else if (rec==='quarterly'){
             const diff = (monthStart.getMonth()-st.getMonth()+12*(monthStart.getFullYear()-st.getFullYear()))%3;
@@ -441,7 +451,7 @@
           (e.rec==='monthly' || !e.rec) ? 1 :
           (e.rec==='quarterly') ? 1/3 :
           (e.rec==='yearly') ? 1/12 :
-          0; // oneoff exclu des KPI mensuels
+          0;
         const mAmt = amt*factor;
         if (e.type==='income') inc += mAmt;
         else {
@@ -451,7 +461,7 @@
         }
       }
       const totalExp = fix + vari + cred;
-      const debtRatio = inc>0 ? ( cred / inc ) : 0;    // <— cohérent avec “Idéal < 35%”
+      const debtRatio = inc>0 ? ( cred / inc ) : 0;
       const resteAVivre = inc - totalExp;
       const saveRate = inc>0 ? Math.max(inc - totalExp, 0)/inc : 0;
       return {
@@ -503,33 +513,27 @@
       const rawEntries = collectEntries();
       const entries = applyScenario(rawEntries);
 
-      // courbe journalière
       const curve = projectDaily(base, entries, modeDays);
 
-      // KPIs
       const k = monthlyKpis(entries);
       el('#kpiDebt').textContent = isFinite(k.debtPct) ? `${k.debtPct.toFixed(1)}%` : '—';
       el('#kpiRav').textContent = fmtMoney(k.reste, cur);
       el('#kpiSave').textContent = isFinite(k.savePct) ? `${k.savePct.toFixed(1)}%` : '—';
 
-      // Alerte découvert
       const firstNeg = curve.findIndex(p => p.balance < 0);
       el('#alert').textContent = firstNeg === -1
         ? "✅ Aucun risque de découvert détecté sur l’horizon choisi."
         : `⚠️ Risque de découvert dans ${firstNeg} jours.`;
 
-      // Cartes M+1 / M+6 / M+12 (si horizon court, on prend max dispo)
       const idx = d => Math.min(d, curve.length-1);
       el('#m1').textContent = fmtMoney(curve[idx(30)].balance, cur);
       el('#m6').textContent = fmtMoney(curve[idx(180)].balance, cur);
       el('#m12').textContent = fmtMoney(curve[idx(365)].balance, cur);
 
-      // Graphiques
       renderLine(curve);
       const mt = monthlyTotals(entries);
       renderBars(mt.labels, mt.income, mt.expense);
 
-      // Mailto récap
       const d30 = curve[Math.min(30, curve.length-1)].balance;
       const d60 = curve[Math.min(60, curve.length-1)].balance;
       const d90 = curve[Math.min(90, curve.length-1)].balance;
@@ -570,7 +574,6 @@ Merci !`
       computeAll();
     }
 
-    // events
     el('#compute').onclick = persistAndCompute;
     el('#resetScn').onclick = () => {
       scenario={varMul:1, extraIncome:0, extraCredit:0};
@@ -589,7 +592,6 @@ Merci !`
     els('.chip').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const t = btn.dataset.scn;
-        // toggle exclusif par type de scénario
         if (t==='var-10') scenario.varMul = (scenario.varMul===0.9 ? 1.0 : 0.9);
         if (t==='rev+200') scenario.extraIncome = (scenario.extraIncome===200 ? 0 : 200);
         if (t==='cred+300') scenario.extraCredit = (scenario.extraCredit===300 ? 0 : 300);
@@ -597,7 +599,6 @@ Merci !`
       });
     });
 
-    // initial state
     (function init(){
       const st = loadState();
       if (st){
@@ -626,7 +627,6 @@ Merci !`
 
     // ===================== EXPORT PDF (beta) =====================
 
-    // Calcule le score comme côté API (formule normalisée)
     function computeScoreFromKpis(k) {
       const revenus = k.inc || 0;
       const taux_epargne = revenus > 0 ? Math.max(revenus - k.totalExp, 0) / revenus : 0;
@@ -652,7 +652,6 @@ Merci !`
       return { score, level, message, ratios: { taux_epargne, taux_charges, taux_dette } };
     }
 
-    // Répartition par catégorie (simple) depuis les KPI mensuels
     function breakdownByCategoryFromKpis(k){
       return [
         { label: "Fixe",     amount: Number((k.fix||0).toFixed(2)) },
@@ -661,7 +660,6 @@ Merci !`
       ];
     }
 
-    // Répartition par récurrence (approx mensuelle) à partir des entrées
     function breakdownByRecurring(entries){
       const sum = { "Mensuel":0, "Hebdo":0, "Ponctuel":0, "Trimestriel":0, "Annuel":0 };
       for (const e of entries){
@@ -689,7 +687,6 @@ Merci !`
       ];
     }
 
-    // Construit le payload PDF à partir de l'état courant de la page
     function buildExportPayload({ base, cur, modeDays, entries, curve, k }){
       const idx = d => Math.min(d, curve.length-1);
       const milestones = {
@@ -742,7 +739,6 @@ Merci !`
       };
     }
 
-    // Conseils simples
     function buildTipsForPdf(scorePack, k, cur){
       const tips = [];
       const revenus = k.inc || 0;
@@ -756,7 +752,6 @@ Merci !`
       return tips;
     }
 
-    // Appel API + téléchargement
     async function exportPdf(){
       try {
         const base = parseFloat(el('#base').value||'0') || 0;
@@ -770,7 +765,7 @@ Merci !`
 
         const payload = buildExportPayload({ base, cur, modeDays, entries, curve, k });
 
-        const res = await fetch('/api/export-pdf', {
+        const res = await fetch(`${API_BASE}/api/export-pdf`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
@@ -790,7 +785,6 @@ Merci !`
       }
     }
 
-    // Active le bouton après 1er calcul et branche le clic
     (function wireExportBtn(){
       const btn = el('#exportPdf');
       if (!btn) return;
