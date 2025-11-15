@@ -1,19 +1,22 @@
-# api/main.py
-
 from fastapi import FastAPI
-from routers import calc  # importe ton module /calc
-from routers import pdf_export  # + calc plus tard si pas déjà importé
+from fastapi.middleware.cors import CORSMiddleware
+from routers import pdf_export
 
-app.include_router(pdf_export.router, prefix="/api", tags=["export"])
+# === Créer l'app AVANT d'utiliser app ===
+app = FastAPI(title="Serenity Web API", version="1.0.0")
 
-app = FastAPI(
-    title="Serenity Web API",
-    description="API de calcul du Score de Sérénité financière",
-    version="1.0.0"
+# === CORS (simple pour l'instant) ===
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # à restreindre plus tard à ton domaine static Serenity Web
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# inclure les routes
-app.include_router(calc.router, prefix="/api", tags=["calcul"])
+# === Routes ===
+app.include_router(pdf_export.router, prefix="/api", tags=["export"])
+
 
 @app.get("/")
 def home():
