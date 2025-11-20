@@ -1,21 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import pdf_export
 
-# === Créer l'app AVANT d'utiliser app ===
+from routers import pdf_export, calc
+
 app = FastAPI(title="Serenity Web API", version="1.0.0")
 
-# === CORS (simple pour l'instant) ===
+# CORS large pour le moment 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # à restreindre plus tard à ton domaine static Serenity Web
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# === Routes ===
+# Routers
 app.include_router(pdf_export.router, prefix="/api", tags=["export"])
+app.include_router(calc.router, prefix="/api", tags=["calc"])
 
 
 @app.get("/")
