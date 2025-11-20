@@ -249,13 +249,9 @@
     // ================== CONFIG API ==================
     const API_BASE = (()=>{
       const host = window.location.hostname;
-
-      // Dev local
       if (host === 'localhost' || host === '127.0.0.1') {
         return 'http://127.0.0.1:8000';
       }
-
-      // Prod Render
       return 'https://serenity-web-api.onrender.com';
     })();
 
@@ -296,7 +292,6 @@
           <button class="btn-del" title="Supprimer">🗑</button>
         </div>
       `;
-      // defaults
       if (defaults.type) wrap.querySelector('.type').value = defaults.type;
       if (defaults.amount!=null) wrap.querySelector('.amount').value = defaults.amount;
       if (defaults.rec) wrap.querySelector('.rec').value = defaults.rec;
@@ -503,8 +498,8 @@
       });
     }
 
-    // ================ Compute All ================
-    function computeAll(){
+    // ================ Compute All (LOCAL) ================
+    function computeAllLocal(){
       const base = parseFloat(el('#base').value||'0') || 0;
       const cur = el('#currency').value || '$';
       const modeDays = el('#mode365').checked ? 365 : 90;
@@ -558,6 +553,122 @@ Je souhaite être informé quand la version Pro (sauvegarde, alertes, PDF) sera 
 Merci !`
       );
       el('#mailtoCta').href = `mailto:sinlocka@gmail.com?subject=${subject}&body=${body}`;
+    }
+
+    // ================ Compute All via API + fallback ================
+    function applyCalcResultToUI({ data, base, cur, modeDays, entries }){
+      const k = data.kpi || {};
+      const curve = data.curve || [];
+      const milestones = data.milestones || {};
+
+      if (!curve.length){
+        computeAllLocal();
+        return;
+      }
+
+      const debtPct = k.debt_pct ?? k.debtPct;
+      const reste = (k.reste_a_vivre !== undefined) ? k.reste_a_vivre : (k.reste ?? 0);
+      const savePct = k.save_pct ?? k.savePct;
+
+      el('#kpiDebt').textContent = isFinite(debtPct) ? `${debtPct.toFixed(1)}%` : '—';
+      el('#kpiRav').textContent = fmtMoney(reste, cur);
+      el('#kpiSave').textContent = isFinite(savePct) ? `${savePct.toFixed(1)}%` : '—';
+
+      const firstNeg = curve.findIndex(p => (p.balance ?? 0) < 0);
+      el('#alert').textContent = firstNeg === -1
+        ? "✅ Aucun risque de découvert détecté sur l’horizon choisi."
+        : `⚠️ Risque de découvert dans ${firstNeg} jours.`;
+
+      const idx = d => Math.min(d, curve.length-1);
+      const m1 = milestones.m1 !== undefined ? milestones.m1 : curve[idx(30)].balance;
+      const m6 = milestones.m6 !== undefined ? milestones.m6 : curve[idx(180)].balance;
+      const m12 = milestones.m12 !== undefined ? milestones.m12 : curve[idx(365)].balance;
+      el('#m1').textContent = fmtMoney(m1, cur);
+      el('#m6').textContent = fmtMoney(m6, cur);
+      el('#m12').textContent = fmtMoney(m12, cur);
+
+      // Line chart from API curve
+      const labels = curve.map(p => p.date);
+      const values = curve.map(p => p.balance);
+      if (lineChart) lineChart.destroy();
+      lineChart = new Chart(el('#chartLine'), {
+        type:'line',
+        data:{ labels, datasets:[{ label:'Solde projeté', data:values, tension:0.3 }] },
+        options:{ responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:false } } }
+      });
+
+      // Bars: toujours à partir des entries côté front
+      const mt = monthlyTotals(entries);
+      renderBars(mt.labels, mt.income, mt.expense);
+
+      // Mailto recap
+      const idx30 = idx(30), idx60 = idx(60), idx90 = idx(90);
+      const d30 = curve[idx30].balance;
+      const d60 = curve[idx60].balance;
+      const d90 = curve[idx90].balance;
+      const subject = encodeURIComponent("Projection cashflow — Serenity Web");
+      const body = encodeURIComponent(
+`Bonjour,
+Je viens de tester Serenity Web.
+
+Solde initial: ${fmtMoney(base, cur)}
+Indicateurs mensuels:
+• Taux d’endettement (crédit/revenus): ${isFinite(debtPct)?debtPct.toFixed(1):'—'}%
+• Reste à vivre: ${fmtMoney(reste, cur)}
+• Taux d’épargne: ${isFinite(savePct)?savePct.toFixed(1):'—'}%
+
+Projection (${modeDays} jours):
+• 30 jours: ${fmtMoney(d30, cur)}
+• 60 jours: ${fmtMoney(d60, cur)}
+• 90 jours: ${fmtMoney(d90, cur)}
+${firstNeg === -1 ? "Aucun découvert prévu." : "Risque de découvert dans " + firstNeg + " jours."}
+
+Je souhaite être informé quand la version Pro (sauvegarde, alertes, PDF) sera disponible.
+Merci !`
+      );
+      el('#mailtoCta').href = `mailto:sinlocka@gmail.com?subject=${subject}&body=${body}`;
+    }
+
+    async function computeAll(){
+      const base = parseFloat(el('#base').value||'0') || 0;
+      const cur = el('#currency').value || '$';
+      const modeDays = el('#mode365').checked ? 365 : 90;
+      el('#horizon').value = modeDays;
+
+      const rawEntries = collectEntries();
+      const entries = applyScenario(rawEntries);
+
+      const payload = {
+        base,
+        currency: cur,
+        horizon_days: modeDays,
+        entries: entries.map(e => ({
+          type: e.type,
+          amount: parseFloat(e.amount || '0') || 0,
+          rec: e.rec || 'monthly',
+          cat: e.cat || 'fixed',
+          start: e.start || null
+        })),
+        scenario: {
+          var_mul: scenario.varMul ?? 1.0,
+          extra_income: scenario.extraIncome ?? 0,
+          extra_credit: scenario.extraCredit ?? 0
+        }
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/api/calc`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        applyCalcResultToUI({ data, base, cur, modeDays, entries });
+      } catch (err) {
+        console.warn('API /calc indisponible, fallback local:', err);
+        computeAllLocal();
+      }
     }
 
     // ================ Persistence + Wiring ================
@@ -629,9 +740,13 @@ Merci !`
 
     function computeScoreFromKpis(k) {
       const revenus = k.inc || 0;
-      const taux_epargne = revenus > 0 ? Math.max(revenus - k.totalExp, 0) / revenus : 0;
-      const taux_charges = revenus > 0 ? (k.fix / revenus) : 0;
-      const taux_dette   = revenus > 0 ? (k.cred / revenus) : 0;
+      const total_exp = k.totalExp || k.total_exp || 0;
+      const fix = k.fix || 0;
+      const cred = k.cred || 0;
+
+      const taux_epargne = revenus > 0 ? Math.max(revenus - total_exp, 0) / revenus : 0;
+      const taux_charges = revenus > 0 ? (fix / revenus) : 0;
+      const taux_dette   = revenus > 0 ? (cred / revenus) : 0;
 
       const comp_epargne = Math.min(taux_epargne / 0.20, 1.0);
       const comp_charges = 1 - Math.min(taux_charges / 0.50, 1.0);
@@ -661,7 +776,7 @@ Merci !`
     }
 
     function breakdownByRecurring(entries){
-      const sum = { "Mensuel":0, "Hebdo":0, "Ponctuel":0, "Trimestriel":0, "Annuel":0 };
+      const sums = {"Mensuel":0, "Hebdo":0, "Ponctuel":0, "Trimestriel":0, "Annuel":0};
       for (const e of entries){
         const amt = parseFloat(e.amount||"0");
         if (!isFinite(amt) || amt===0) continue;
@@ -672,18 +787,18 @@ Merci !`
         else if (rec==='quarterly') mAmt = amt/3;
         else if (rec==='yearly') mAmt = amt/12;
         else if (rec==='oneoff') mAmt = amt;
-        if (rec==='weekly') sum["Hebdo"] += mAmt;
-        else if (rec==='monthly') sum["Mensuel"] += mAmt;
-        else if (rec==='quarterly') sum["Trimestriel"] += mAmt;
-        else if (rec==='yearly') sum["Annuel"] += mAmt;
-        else if (rec==='oneoff') sum["Ponctuel"] += mAmt;
+        if (rec==='weekly') sums["Hebdo"] += mAmt;
+        else if (rec==='monthly') sums["Mensuel"] += mAmt;
+        else if (rec==='quarterly') sums["Trimestriel"] += mAmt;
+        else if (rec==='yearly') sums["Annuel"] += mAmt;
+        else if (rec==='oneoff') sums["Ponctuel"] += mAmt;
       }
       return [
-        { label:"Mensuel", amount:Number(sum["Mensuel"].toFixed(2)) },
-        { label:"Hebdo", amount:Number(sum["Hebdo"].toFixed(2)) },
-        { label:"Ponctuel", amount:Number(sum["Ponctuel"].toFixed(2)) },
-        { label:"Trimestriel", amount:Number(sum["Trimestriel"].toFixed(2)) },
-        { label:"Annuel", amount:Number(sum["Annuel"].toFixed(2)) }
+        { label:"Mensuel", amount:Number(sums["Mensuel"].toFixed(2)) },
+        { label:"Hebdo", amount:Number(sums["Hebdo"].toFixed(2)) },
+        { label:"Ponctuel", amount:Number(sums["Ponctuel"].toFixed(2)) },
+        { label:"Trimestriel", amount:Number(sums["Trimestriel"].toFixed(2)) },
+        { label:"Annuel", amount:Number(sums["Annuel"].toFixed(2)) }
       ];
     }
 
@@ -742,12 +857,20 @@ Merci !`
     function buildTipsForPdf(scorePack, k, cur){
       const tips = [];
       const revenus = k.inc || 0;
-      const need20 = Math.max(0, 0.20*revenus - Math.max(revenus - k.totalExp, 0));
+      const totalExp = k.totalExp || 0;
+      const fix = k.fix || 0;
+      const cred = k.cred || 0;
+
+      const actuelleEpargne = Math.max(revenus - totalExp, 0);
+      const need20 = Math.max(0, 0.20*revenus - actuelleEpargne);
       if (need20 > 0) tips.push(`Augmente l’épargne mensuelle de ${cur}${need20.toFixed(2)} pour viser 20 %.`);
-      const overFix = k.fix - 0.50*revenus;
+
+      const overFix = fix - 0.50*revenus;
       if (overFix > 0) tips.push(`Réduis les charges fixes d’environ ${cur}${overFix.toFixed(2)} pour repasser sous 50 %.`);
-      const overDebt = k.cred - 0.20*revenus;
+
+      const overDebt = cred - 0.20*revenus;
       if (overDebt > 0) tips.push(`Négocie/solde ${cur}${overDebt.toFixed(2)} de mensualités pour revenir sous 20 %.`);
+
       if (!tips.length) tips.push("Continue : maintiens ton cap et renforce progressivement l’épargne.");
       return tips;
     }
@@ -790,8 +913,8 @@ Merci !`
       if (!btn) return;
       btn.addEventListener('click', exportPdf);
       const _oldComputeAll = computeAll;
-      computeAll = function(){
-        _oldComputeAll();
+      computeAll = async function(){
+        await _oldComputeAll();
         btn.disabled = false;
       };
     })();
