@@ -255,6 +255,20 @@
       return 'https://serenity-web-api.onrender.com';
     })();
 
+    // ================== WAKE API (Render free) ==================
+    async function wakeApi() {
+      try {
+        await fetch(`${API_BASE}/`, {
+          method: 'GET',
+          mode: 'no-cors',
+          cache: 'no-store'
+        });
+        console.log('Wake API envoyé');
+      } catch (e) {
+        console.warn('Wake API failed (non bloquant):', e);
+      }
+    }
+
     // ================ State (localStorage) ================
     const LS_KEY = 'serenityweb_state_v1';
     function saveState(state){
@@ -587,7 +601,6 @@ Merci !`
       el('#m6').textContent = fmtMoney(m6, cur);
       el('#m12').textContent = fmtMoney(m12, cur);
 
-      // Line chart from API curve
       const labels = curve.map(p => p.date);
       const values = curve.map(p => p.balance);
       if (lineChart) lineChart.destroy();
@@ -597,11 +610,9 @@ Merci !`
         options:{ responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:false } } }
       });
 
-      // Bars: toujours à partir des entries côté front
       const mt = monthlyTotals(entries);
       renderBars(mt.labels, mt.income, mt.expense);
 
-      // Mailto recap
       const idx30 = idx(30), idx60 = idx(60), idx90 = idx(90);
       const d30 = curve[idx30].balance;
       const d60 = curve[idx60].balance;
@@ -711,6 +722,9 @@ Merci !`
     });
 
     (function init(){
+      // Réveille l'API Render en arrière-plan
+      wakeApi();
+
       const st = loadState();
       if (st){
         el('#base').value = st.base ?? 0;
