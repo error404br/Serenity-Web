@@ -697,7 +697,8 @@
           balance:p.balance
         }))
       };
-
+      el("#exportPdf").addEventListener("click", exportPdf);
+      
       const res = await fetch(API_BASE + "/api/export-pdf", {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
