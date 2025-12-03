@@ -718,6 +718,11 @@
     }
   }
 
+  // Bind du bouton Export PDF (une seule fois après chargement du DOM)
+  const exportBtn = el("#exportPdf");
+  if (exportBtn) {
+    exportBtn.addEventListener("click", exportPdf);
+  }
 
 
   /* ============================================================
