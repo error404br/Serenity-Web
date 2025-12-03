@@ -20,6 +20,7 @@
     .btn-del{border:1px solid #e5e7eb;border-radius:.65rem;padding:.35rem .6rem;font-size:.8rem}
   </style>
 </head>
+
 <body class="bg-slate-50 text-slate-900">
   <!-- Header -->
   <header class="border-b border-slate-200 bg-white/80 backdrop-blur">
@@ -45,14 +46,16 @@
           Votre finance, claire et sereine.
         </h1>
         <p class="mt-4 text-slate-600">
-          Projetez <strong>90 jours</strong> ou <strong>12 mois</strong> en 1 minute. Taux d’endettement, reste à vivre, taux d’épargne — <em>calcul 100% local, sans inscription</em>.
+          Projetez <strong>90 jours</strong> ou <strong>12 mois</strong> en 1 minute.
+          Taux d’endettement, reste à vivre, taux d’épargne — <em>calcul 100% local, sans inscription</em>.
         </p>
+
         <div class="mt-6 flex flex-wrap gap-3">
           <a href="#simulateur" class="px-4 py-3 rounded-2xl bg-[color:var(--brand)] text-white font-semibold">Lancer le simulateur</a>
           <a href="#projection" class="px-4 py-3 rounded-2xl bg-white border border-slate-200">Voir un exemple</a>
         </div>
-        <p class="mt-3 text-xs text-slate-500">Pas de collecte bancaire • Gratuit • Export mail</p>
       </div>
+
       <div class="card p-6">
         <div class="aspect-video rounded-2xl bg-gradient-to-br from-slate-100 to-white grid place-items-center text-slate-500">
           Graphiques solde & revenus/dépenses
@@ -66,8 +69,18 @@
 
   <!-- Simulateur -->
   <section id="simulateur" class="max-w-6xl mx-auto px-5 py-8 grid lg:grid-cols-2 gap-8">
-    <!-- Paramètres -->
+
+    <!-- COLONNE PARAMÈTRES -->
     <div class="card p-6">
+
+      <!-- NOUVEAU: Nom du scénario -->
+      <h2 class="text-xl font-bold mb-2">Nom du scénario</h2>
+      <input id="scenarioName" type="text"
+             class="w-full border rounded-xl p-2 mb-6"
+             placeholder="Nom du scénario"
+             value="Budget actuel">
+
+      <!-- Paramètres -->
       <h2 class="text-xl font-bold">Vos paramètres</h2>
       <p class="text-sm text-slate-600">Renseignez un solde initial et vos flux récurrents.</p>
 
@@ -92,22 +105,26 @@
           <div class="flex items-center gap-2">
             <input type="radio" name="hmode" id="mode90" value="90" checked>
             <label for="mode90" class="text-sm">90 jours</label>
+
             <input type="radio" name="hmode" id="mode365" value="365" class="ml-4">
             <label for="mode365" class="text-sm">12 mois</label>
           </div>
         </div>
+
         <div>
           <label class="block text-sm text-slate-600 mb-1">Horizon (jours)</label>
           <input id="horizon" type="number" class="w-full border rounded-xl p-2" value="90" min="30" max="365">
           <p class="text-[11px] text-slate-500 mt-1">Basculer 90j/12m ajuste automatiquement.</p>
         </div>
       </div>
+      <!-- Lignes de revenus/dépenses -->
 
       <div class="mt-6">
         <div class="flex items-center justify-between mb-2">
           <h3 class="font-semibold">Lignes de revenus/dépenses</h3>
           <button id="addRow" class="text-sm px-3 py-1 rounded-lg bg-slate-900 text-white">+ Ajouter</button>
         </div>
+
         <div class="grid grid-cols-12 gap-2 text-[12px] text-slate-500">
           <div class="col-span-2">Type</div>
           <div class="col-span-2">Montant</div>
@@ -115,42 +132,54 @@
           <div class="col-span-3">Catégorie</div>
           <div class="col-span-2">Début</div>
         </div>
+
         <div id="rows" class="space-y-3 mt-1"></div>
-        <p class="mt-2 text-xs text-slate-500">Catégories: <strong>Fixe</strong> (loyer, assurances), <strong>Variable</strong> (courses, loisirs), <strong>Crédit</strong> (mensualité).</p>
+
+        <p class="mt-2 text-xs text-slate-500">
+          Catégories : <strong>Fixe</strong> (loyer, assurances),
+          <strong>Variable</strong> (courses, loisirs),
+          <strong>Crédit</strong> (mensualité).
+        </p>
       </div>
 
       <div class="mt-6 flex flex-wrap gap-2">
-        <button id="compute" class="px-4 py-3 rounded-2xl bg-emerald-600 text-white font-semibold">Calculer ma projection</button>
-        <button id="resetScn" class="px-4 py-3 rounded-2xl bg-white border">Réinitialiser</button>
+        <button id="compute" class="px-4 py-3 rounded-2xl bg-emerald-600 text-white font-semibold">
+          Calculer ma projection
+        </button>
+        <button id="resetScn" class="px-4 py-3 rounded-2xl bg-white border">
+          Réinitialiser
+        </button>
       </div>
 
-      <!-- Scénarios -->
+      <!-- Scénarios rapides -->
       <div class="mt-4 flex flex-wrap gap-2">
         <span class="text-sm text-slate-600 mr-2">Scénarios rapides :</span>
         <button class="chip" data-scn="var-10">−10% variables</button>
         <button class="chip" data-scn="rev+200">+200 / mois revenus</button>
         <button class="chip" data-scn="cred+300">+300 / mois crédit</button>
       </div>
-    </div>
 
-    <!-- Indicateurs -->
+    </div> <!-- fin col gauche -->
+
+
+    <!-- COLONNE INDICATEURS -->
     <div class="card p-6">
       <h2 class="text-xl font-bold">Indicateurs</h2>
+
       <div class="grid sm:grid-cols-3 gap-3 mt-3">
         <div class="p-4 rounded-2xl bg-slate-50">
           <div class="kpi-label">Taux d’endettement</div>
           <div id="kpiDebt" class="kpi-value">—</div>
-          <div class="text-xs text-slate-500 mt-1">Idéal &lt; 35%</div>
         </div>
+
         <div class="p-4 rounded-2xl bg-slate-50">
           <div class="kpi-label">Reste à vivre (mensuel)</div>
           <div id="kpiRav" class="kpi-value">—</div>
-          <div class="text-xs text-slate-500 mt-1">Après charges fixes & variables</div>
         </div>
+
         <div class="p-4 rounded-2xl bg-slate-50">
           <div class="kpi-label">Taux d’épargne</div>
           <div id="kpiSave" class="kpi-value">—</div>
-          <div class="text-xs text-slate-500 mt-1">Objectif 10–20%/mois</div>
         </div>
       </div>
 
@@ -159,10 +188,12 @@
           <div class="text-xs text-slate-600">M+1</div>
           <div id="m1" class="text-2xl font-extrabold">—</div>
         </div>
+
         <div class="p-4 rounded-2xl bg-amber-50">
           <div class="text-xs text-slate-600">M+6</div>
           <div id="m6" class="text-2xl font-extrabold">—</div>
         </div>
+
         <div class="p-4 rounded-2xl bg-rose-50">
           <div class="text-xs text-slate-600">M+12</div>
           <div id="m12" class="text-2xl font-extrabold">—</div>
@@ -171,57 +202,75 @@
 
       <p id="alert" class="mt-4 text-sm"></p>
 
-      <!-- Liens mail & Excel -->
+      <!-- CTA Email / Excel -->
       <div class="mt-6 grid gap-3 sm:grid-cols-2">
-        <a id="mailtoCta" href="#" class="text-center px-4 py-3 rounded-2xl bg-[color:var(--brand)] text-white font-semibold">
+        <a id="mailtoCta" href="#"
+           class="text-center px-4 py-3 rounded-2xl bg-[color:var(--brand)] text-white font-semibold">
           Recevoir ma projection par e-mail
         </a>
-        <a href="https://www.etsy.com/ca-fr/listing/1766882287/previsionnel-comptable-bilan" class="text-center px-4 py-3 rounded-2xl bg-white border border-slate-200">
+
+        <a href="https://www.etsy.com/ca-fr/listing/1766882287/previsionnel-comptable-bilan"
+           class="text-center px-4 py-3 rounded-2xl bg-white border border-slate-200">
           📥 Télécharger Serenity Files (Excel)
         </a>
       </div>
 
-      <!-- Bouton Export PDF -->
-      <div class="mt-3">
-        <button id="exportPdf" class="px-4 py-3 rounded-2xl bg-slate-900 text-white font-semibold w-full sm:w-auto" disabled>
+      <!-- Export PDF -->
+      <div class="mt-6">
+        <button id="exportPdf"
+                class="px-4 py-3 rounded-2xl bg-slate-900 text-white font-semibold w-full sm:w-auto"
+                disabled>
           🔒 Exporter en PDF (beta)
         </button>
         <p class="text-xs text-slate-500 mt-1">
-          Pour l’instant ouvert à tous pour test. En bêta publique, ce bouton sera réservé aux comptes Pro.
+          Fonction expérimentale — nécessite la version Pro dans le futur.
         </p>
       </div>
 
-    </div>
+    </div> <!-- fin col droite -->
   </section>
 
-  <!-- Projection -->
-  <section id="projection" class="max-w-6xl mx-auto px-5 py-8 grid lg:grid-cols-2 gap-8">
+
+  <!-- PROJECTION GRAPHIQUES -->
+  <section id="projection"
+           class="max-w-6xl mx-auto px-5 py-8 grid lg:grid-cols-2 gap-8">
+
     <div class="card p-6">
       <h3 class="text-lg font-semibold">Solde projeté</h3>
       <canvas id="chartLine" class="mt-4"></canvas>
     </div>
+
     <div class="card p-6">
       <h3 class="text-lg font-semibold">Revenus vs Dépenses (par mois)</h3>
       <canvas id="chartBars" class="mt-4"></canvas>
     </div>
+
   </section>
+
 
   <!-- FAQ -->
   <section id="faq" class="max-w-6xl mx-auto px-5 py-8">
     <h3 class="text-xl font-bold">FAQ rapide</h3>
+
     <div class="mt-4 grid md:grid-cols-2 gap-4">
       <div class="card p-4">
         <p class="font-semibold">Mes données sont-elles stockées ?</p>
-        <p class="text-sm text-slate-600 mt-1">Par défaut, non : tout est calculé dans votre navigateur. Vous pouvez activer la sauvegarde locale (automatique) pour reprendre là où vous vous êtes arrêté.</p>
+        <p class="text-sm text-slate-600 mt-1">
+          Non, le calcul est local. La version Pro ajoutera une sauvegarde cloud.
+        </p>
       </div>
+
       <div class="card p-4">
         <p class="font-semibold">Puis-je enregistrer un scénario ?</p>
-        <p class="text-sm text-slate-600 mt-1">Dans ce MVP, vos entrées se rechargent automatiquement depuis votre navigateur. La version Pro ajoutera sauvegarde cloud, alertes et export PDF.</p>
+        <p class="text-sm text-slate-600 mt-1">
+          Le MVP recharge automatiquement vos entrées.
+        </p>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
+
+  <!-- FOOTER -->
   <footer class="mt-10 border-t">
     <div class="max-w-6xl mx-auto px-5 py-8 text-sm text-slate-600 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
       <div>© Serenity Web — un projet BuildToSolve</div>
@@ -229,710 +278,628 @@
     </div>
   </footer>
 
-  <!-- Logiciel client -->
+
+  <!-- SCRIPT PRINCIPAL : LOGIQUE SERENITY WEB -->
   <script>
-    // ================ Utils ================
-    const el = s => document.querySelector(s);
-    const els = s => Array.from(document.querySelectorAll(s));
-    const today0 = () => { const d=new Date(); d.setHours(0,0,0,0); return d; };
-    const addDays = (d, n) => { const x=new Date(d); x.setDate(x.getDate()+n); x.setHours(0,0,0,0); return x; };
-    const endOfMonth = (d) => new Date(d.getFullYear(), d.getMonth()+1, 0);
-    const monthKey = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-    const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
-    const debounce = (fn, t=250) => { let id; return (...args)=>{ clearTimeout(id); id=setTimeout(()=>fn(...args), t); }; };
-    const fmtMoney = (n, cur) => {
-      if (!isFinite(n)) return '—';
-      const sign = n < 0 ? '-' : '';
-      return `${sign}${cur}${Math.abs(Number(n)).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
-    };
 
-    // ================== CONFIG API ==================
-    const API_BASE = (()=>{
-      const host = window.location.hostname;
-      if (host === 'localhost' || host === '127.0.0.1') {
-        return 'http://127.0.0.1:8000';
-      }
-      return 'https://serenity-web-api.onrender.com';
-    })();
+  /* ============================================================
+     1 — SHORTCUTS + UTIL
+  ============================================================ */
+  const el = s => document.querySelector(s);
+  const els = s => Array.from(document.querySelectorAll(s));
 
-    // ================== WAKE API (Render free) ==================
-    async function wakeApi() {
-      try {
-        await fetch(`${API_BASE}/`, {
-          method: 'GET',
-          mode: 'no-cors',
-          cache: 'no-store'
-        });
-        console.log('Wake API envoyé');
-      } catch (e) {
-        console.warn('Wake API failed (non bloquant):', e);
-      }
+  const today0 = () => { const d=new Date(); d.setHours(0,0,0,0); return d; };
+  const addDays = (d, n) => { const x=new Date(d); x.setDate(x.getDate()+n); x.setHours(0,0,0,0); return x; };
+  const debounce = (fn,t=250)=>{ let id;return(...args)=>{clearTimeout(id);id=setTimeout(()=>fn(...args),t);} };
+
+  const fmtMoney = (n,cur)=>{
+    if(!isFinite(n))return'—';
+    const s = n<0 ? '-' : '';
+    return `${s}${cur}${Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  };
+
+
+  /* ============================================================
+     2 — API CONFIG + WAKE
+  ============================================================ */
+
+  const API_BASE = (() => {
+    const host = window.location.hostname;
+    if (host === "localhost" || host === "127.0.0.1") return "http://127.0.0.1:8000";
+    return "https://serenity-web-api.onrender.com";
+  })();
+
+  async function wakeApi() {
+    try {
+      await fetch(API_BASE + "/", { method:"GET", mode:"no-cors", cache:"no-store" });
+      console.log("Wake API envoyé");
+    } catch(e){
+      console.warn("Wake API failed:", e);
     }
+  }
 
-    // ================ State (localStorage) ================
-    const LS_KEY = 'serenityweb_state_v1';
-    function saveState(state){
-      try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch(e){}
-    }
-    function loadState(){
-      try { const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; }
-    }
 
-    // ================ Dynamic Rows ================
-    const rows = el('#rows');
-    function lineRow(defaults = {}){
-      const wrap = document.createElement('div');
-      wrap.className = "grid grid-cols-12 gap-2 items-end";
-      wrap.innerHTML = `
-        <select class="col-span-2 border rounded-xl p-2 type">
-          <option value="income">Revenu</option>
-          <option value="expense">Dépense</option>
-        </select>
-        <input class="col-span-2 border rounded-xl p-2 amount" type="number" placeholder="Montant" step="0.01">
-        <select class="col-span-3 border rounded-xl p-2 rec">
-          <option value="oneoff">Ponctuel</option>
-          <option value="weekly">Hebdo</option>
-          <option value="monthly" selected>Mensuel</option>
-          <option value="quarterly">Trimestriel</option>
-          <option value="yearly">Annuel</option>
-        </select>
-        <select class="col-span-3 border rounded-xl p-2 cat">
-          <option value="fixed">Fixe</option>
-          <option value="variable">Variable</option>
-          <option value="credit">Crédit</option>
-        </select>
-        <div class="col-span-2 flex gap-2">
-          <input class="border rounded-xl p-2 start flex-1" type="date">
-          <button class="btn-del" title="Supprimer">🗑</button>
-        </div>
-      `;
-      if (defaults.type) wrap.querySelector('.type').value = defaults.type;
-      if (defaults.amount!=null) wrap.querySelector('.amount').value = defaults.amount;
-      if (defaults.rec) wrap.querySelector('.rec').value = defaults.rec;
-      if (defaults.cat) wrap.querySelector('.cat').value = defaults.cat;
-      if (defaults.start) wrap.querySelector('.start').value = defaults.start;
+  /* ============================================================
+     3 — DYNAMIC ROWS (ENTRIES)
+  ============================================================ */
 
-      wrap.querySelector('.btn-del').addEventListener('click', ()=>{
-        wrap.remove();
-        persistAndCompute();
+  const rows = el("#rows");
+
+  function lineRow(defaults={}) {
+    const wrap = document.createElement("div");
+    wrap.className = "grid grid-cols-12 gap-2 items-end";
+
+    wrap.innerHTML = `
+      <select class="col-span-2 border rounded-xl p-2 type">
+        <option value="income">Revenu</option>
+        <option value="expense">Dépense</option>
+      </select>
+
+      <input class="col-span-2 border rounded-xl p-2 amount" type="number" step="0.01">
+
+      <select class="col-span-3 border rounded-xl p-2 rec">
+        <option value="oneoff">Ponctuel</option>
+        <option value="weekly">Hebdo</option>
+        <option value="monthly" selected>Mensuel</option>
+        <option value="quarterly">Trimestriel</option>
+        <option value="yearly">Annuel</option>
+      </select>
+
+      <select class="col-span-3 border rounded-xl p-2 cat">
+        <option value="fixed">Fixe</option>
+        <option value="variable">Variable</option>
+        <option value="credit">Crédit</option>
+      </select>
+
+      <div class="col-span-2 flex gap-2">
+        <input class="border rounded-xl p-2 start flex-1" type="date">
+        <button class="btn-del" title="Supprimer">🗑</button>
+      </div>
+    `;
+
+    if(defaults.type) wrap.querySelector(".type").value = defaults.type;
+    if(defaults.amount!=null) wrap.querySelector(".amount").value = defaults.amount;
+    if(defaults.rec) wrap.querySelector(".rec").value = defaults.rec;
+    if(defaults.cat) wrap.querySelector(".cat").value = defaults.cat;
+    if(defaults.start) wrap.querySelector(".start").value = defaults.start;
+
+    wrap.querySelector(".btn-del").addEventListener("click", ()=>{
+      wrap.remove();
+      persistAndCompute();
+    });
+
+    wrap.querySelectorAll(".type, .amount, .rec, .cat, .start")
+      .forEach(inp=>{
+        inp.addEventListener("input", debounce(persistAndCompute,200));
+        inp.addEventListener("change", debounce(persistAndCompute,200));
       });
 
-      Array.from(wrap.querySelectorAll('.type, .amount, .rec, .cat, .start')).forEach(inp=>{
-        inp.addEventListener('input', debounce(persistAndCompute, 200));
-        inp.addEventListener('change', debounce(persistAndCompute, 200));
-      });
+    return wrap;
+  }
 
-      return wrap;
-    }
+  el("#addRow").onclick = () => {
+    rows.appendChild(lineRow());
+    persistAndCompute();
+  };
 
-    el('#addRow').onclick = () => { rows.appendChild(lineRow()); persistAndCompute(); };
+  function collectEntries() {
+    return [...rows.children].map(r=>({
+      type: r.querySelector(".type").value,
+      amount: r.querySelector(".amount").value,
+      rec: r.querySelector(".rec").value,
+      cat: r.querySelector(".cat").value,
+      start: r.querySelector(".start").value
+    }));
+  }
 
-    function collectEntries(){
-      return [...rows.children].map(r => ({
-        type: r.querySelector('.type').value,
-        amount: r.querySelector('.amount').value,
-        rec: r.querySelector('.rec').value,
-        cat: r.querySelector('.cat').value,
-        start: r.querySelector('.start').value
-      }));
-    }
 
-    // ================ Scénarios ================
-    let scenario = { varMul: 1.0, extraIncome: 0, extraCredit: 0 };
+  /* ============================================================
+     4 — SCÉNARIOS RAPIDES (var, revenu+, crédit+)
+  ============================================================ */
 
-    function applyScenario(entries){
-      const out = entries.map(e=>({...e}));
-      if (scenario.varMul !== 1){
-        for (const e of out){
-          if (e.type==='expense' && e.cat==='variable'){
-            const amt = parseFloat(e.amount||"0");
-            if (isFinite(amt)) e.amount = (amt*scenario.varMul).toFixed(2);
-          }
-        }
-      }
-      if (scenario.extraIncome>0){
-        out.push({type:'income', amount: scenario.extraIncome, rec:'monthly', cat:'fixed', start: new Date().toISOString().slice(0,10)});
-      }
-      if (scenario.extraCredit>0){
-        out.push({type:'expense', amount: scenario.extraCredit, rec:'monthly', cat:'credit', start: new Date().toISOString().slice(0,10)});
-      }
-      return out;
-    }
+  let scenario = { varMul:1.0, extraIncome:0, extraCredit:0 };
 
-    function setActiveChip(){
-      els('.chip').forEach(b=>b.classList.remove('active'));
-      if (scenario.varMul === 0.9) el('[data-scn="var-10"]')?.classList.add('active');
-      if (scenario.extraIncome === 200) el('[data-scn="rev+200"]')?.classList.add('active');
-      if (scenario.extraCredit === 300) el('[data-scn="cred+300"]')?.classList.add('active');
-    }
+  function applyScenario(entries){
+    const out = entries.map(e=>({...e}));
 
-    // ================ Projection (jour/jour) ================
-    function generateEvents(entries, horizonDays, start){
-      const evts = [];
-      const end = addDays(start, horizonDays);
-      for (const e of entries){
-        const amt = parseFloat(e.amount || "0");
-        if (!isFinite(amt) || amt === 0) continue;
-        const sign = e.type === 'income' ? +1 : -1;
-        let d = e.start ? new Date(e.start) : new Date(start);
-        d.setHours(0,0,0,0);
-        if (d < start) d = new Date(start);
-        const rec = e.rec || 'monthly';
-        const push = (dt) => { if (dt <= end) evts.push({date:new Date(dt), delta: sign*amt}); };
-        if (rec === 'oneoff'){ push(d); }
-        else {
-          while (d <= end){
-            push(d);
-            if (rec === 'weekly') d.setDate(d.getDate()+7);
-            else if (rec === 'monthly') d.setMonth(d.getMonth()+1);
-            else if (rec === 'quarterly') d.setMonth(d.getMonth()+3);
-            else if (rec === 'yearly') d.setFullYear(d.getFullYear()+1);
-          }
-        }
-      }
-      evts.sort((a,b)=>a.date-b.date);
-      return evts;
-    }
-
-    function projectDaily(base, entries, horizonDays){
-      const start = today0();
-      const evts = generateEvents(entries, horizonDays, start);
-      const out = [];
-      let bal = base, i = 0;
-      for (let d=0; d<=horizonDays; d++){
-        const cur = addDays(start, d);
-        while (i<evts.length && evts[i].date.getTime()===cur.getTime()){
-          bal += evts[i].delta; i++;
-        }
-        out.push({date: cur, balance: Number(bal.toFixed(2))});
-      }
-      return out;
-    }
-
-    // ================ Agrégation mensuelle & Totaux ================
-    function monthlyTotals(entries){
-      const start = today0();
-      const labels = [];
-      const income = [];
-      const expense = [];
-      let d = new Date(start.getFullYear(), start.getMonth(), 1);
-      for (let m=0; m<12; m++){
-        const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
-        const monthEnd = new Date(d.getFullYear(), d.getMonth()+1, 0);
-        let inc = 0, exp = 0;
-        for (const e of entries){
+    if(scenario.varMul!==1){
+      for(const e of out){
+        if(e.type==="expense" && e.cat==="variable"){
           const amt = parseFloat(e.amount||"0");
-          if (!isFinite(amt) || amt===0) continue;
-          const rec = e.rec||'monthly';
-          const typ = e.type;
-          const st = e.start ? new Date(e.start) : start;
-          st.setHours(0,0,0,0);
-
-          let add = 0;
-          if (rec==='weekly') add = amt*4.333;
-          else if (rec==='monthly') add = amt;
-          else if (rec==='quarterly'){
-            const diff = (monthStart.getMonth()-st.getMonth()+12*(monthStart.getFullYear()-st.getFullYear()))%3;
-            if (diff===0 && monthStart>=new Date(st.getFullYear(), st.getMonth(),1)) add = amt;
-          } else if (rec==='yearly'){
-            if (monthStart.getMonth()===st.getMonth() && monthStart.getFullYear()>=st.getFullYear()) add = amt;
-          } else if (rec==='oneoff'){
-            if (st>=monthStart && st<=monthEnd) add = amt;
-          }
-
-          if (typ==='income') inc += add; else exp += add;
+          if(isFinite(amt)) e.amount = (amt * scenario.varMul).toFixed(2);
         }
-        labels.push(`${monthStart.toLocaleString(undefined,{month:'short'})}`);
-        income.push(Number(inc.toFixed(2)));
-        expense.push(Number(exp.toFixed(2)));
-        d.setMonth(d.getMonth()+1);
       }
-      return {labels, income, expense};
     }
 
-    function monthlyKpis(entries){
-      let inc=0, fix=0, vari=0, cred=0;
-      for (const e of entries){
+    if(scenario.extraIncome>0){
+      out.push({
+        type:"income",
+        amount:scenario.extraIncome,
+        rec:"monthly",
+        cat:"fixed",
+        start:new Date().toISOString().slice(0,10)
+      });
+    }
+
+    if(scenario.extraCredit>0){
+      out.push({
+        type:"expense",
+        amount:scenario.extraCredit,
+        rec:"monthly",
+        cat:"credit",
+        start:new Date().toISOString().slice(0,10)
+      });
+    }
+
+    return out;
+  }
+
+  function setActiveChip(){
+    els(".chip").forEach(b=>b.classList.remove("active"));
+    if(scenario.varMul===0.9) el('[data-scn="var-10"]')?.classList.add("active");
+    if(scenario.extraIncome===200) el('[data-scn="rev+200"]')?.classList.add("active");
+    if(scenario.extraCredit===300) el('[data-scn="cred+300"]')?.classList.add("active");
+  }
+
+
+  /* ============================================================
+     5 — CALCUL (LOCAL + API)
+  ============================================================ */
+
+  function buildPayloadForApi(base, cur, modeDays, entries){
+    return {
+      scenario_name: el("#scenarioName").value,
+      base,
+      currency: cur,
+      horizon_days: modeDays,
+      entries
+    };
+  }
+
+  async function computeViaApi(base, cur, modeDays, entries){
+    try {
+      const res = await fetch(API_BASE + "/api/calc", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify(buildPayloadForApi(base,cur,modeDays,entries))
+      });
+
+      if(!res.ok) throw new Error("API calc failed");
+
+      return await res.json();
+    }
+    catch(e){
+      console.warn("API calc error → fallback local :", e);
+      return null;
+    }
+  }
+
+  /* ------- CALCUL LOCAL ------- */
+
+  function generateEvents(entries, horizonDays){
+    const start = today0();
+    const end = addDays(start, horizonDays);
+    const evts = [];
+
+    for(const e of entries){
+      const amt = parseFloat(e.amount||"0");
+      if(!isFinite(amt) || amt===0) continue;
+      const sign = e.type==="income" ? +1 : -1;
+
+      let d = e.start ? new Date(e.start) : new Date(start);
+      d.setHours(0,0,0,0);
+      if(d < start) d = new Date(start);
+
+      const rec = e.rec||"monthly";
+
+      const push = dt => { if(dt<=end) evts.push({date:new Date(dt), delta:sign*amt}); };
+
+      if(rec==="oneoff"){ push(d); }
+      else {
+        while(d<=end){
+          push(d);
+          if(rec==="weekly") d.setDate(d.getDate()+7);
+          else if(rec==="monthly") d.setMonth(d.getMonth()+1);
+          else if(rec==="quarterly") d.setMonth(d.getMonth()+3);
+          else if(rec==="yearly") d.setFullYear(d.getFullYear()+1);
+        }
+      }
+    }
+
+    evts.sort((a,b)=>a.date - b.date);
+    return evts;
+  }
+
+  function projectDaily(base, entries, horizonDays){
+    const start = today0();
+    const evts = generateEvents(entries, horizonDays);
+    const out = [];
+    let bal = base, i = 0;
+
+    for(let d=0; d<=horizonDays; d++){
+      const cur = addDays(start, d);
+      while(i<evts.length && evts[i].date.getTime()===cur.getTime()){
+        bal += evts[i].delta;
+        i++;
+      }
+      out.push({date:cur, balance:Number(bal.toFixed(2))});
+    }
+
+    return out;
+  }
+
+  function monthlyTotals(entries){
+    const start = today0();
+    const labels = [];
+    const income = [];
+    const expense = [];
+    let d = new Date(start.getFullYear(), start.getMonth(), 1);
+
+    for(let m=0; m<12; m++){
+      const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+      const monthEnd = new Date(d.getFullYear(), d.getMonth()+1, 0);
+
+      let inc=0, exp=0;
+
+      for(const e of entries){
         const amt = parseFloat(e.amount||"0");
-        if (!isFinite(amt) || amt===0) continue;
-        const factor =
-          (e.rec==='weekly') ? 4.333 :
-          (e.rec==='monthly' || !e.rec) ? 1 :
-          (e.rec==='quarterly') ? 1/3 :
-          (e.rec==='yearly') ? 1/12 :
-          0;
-        const mAmt = amt*factor;
-        if (e.type==='income') inc += mAmt;
-        else {
-          if (e.cat==='fixed') fix += mAmt;
-          else if (e.cat==='credit') cred += mAmt;
-          else vari += mAmt;
+        if(!isFinite(amt) || amt===0) continue;
+
+        const rec = e.rec||"monthly";
+        const typ = e.type;
+        const st = e.start ? new Date(e.start) : start;
+        st.setHours(0,0,0,0);
+
+        let add = 0;
+
+        if(rec==="weekly") add = amt * 4.333;
+        else if(rec==="monthly") add = amt;
+        else if(rec==="quarterly"){
+          const diff = (
+            monthStart.getMonth() -
+            st.getMonth() +
+            12 * (monthStart.getFullYear() - st.getFullYear())
+          ) % 3;
+          if(diff===0 && monthStart >= new Date(st.getFullYear(), st.getMonth(),1)) add = amt;
         }
+        else if(rec==="yearly"){
+          if(monthStart.getMonth()===st.getMonth() && monthStart.getFullYear()>=st.getFullYear())
+            add = amt;
+        }
+        else if(rec==="oneoff"){
+          if(st>=monthStart && st<=monthEnd) add = amt;
+        }
+
+        if(typ==="income") inc += add;
+        else exp += add;
       }
-      const totalExp = fix + vari + cred;
-      const debtRatio = inc>0 ? ( cred / inc ) : 0;
-      const resteAVivre = inc - totalExp;
-      const saveRate = inc>0 ? Math.max(inc - totalExp, 0)/inc : 0;
-      return {
-        debtPct: Math.max(0, debtRatio*100),
-        reste: resteAVivre,
-        savePct: Math.max(0, saveRate*100),
-        inc, fix, vari, cred, totalExp
-      };
+
+      labels.push(monthStart.toLocaleString(undefined,{month:"short"}));
+      income.push(Number(inc.toFixed(2)));
+      expense.push(Number(exp.toFixed(2)));
+
+      d.setMonth(d.getMonth()+1);
     }
 
-    // ================ Charts ================
-    let lineChart, barsChart;
-    function renderLine(curve){
-      const labels = curve.map(p=>p.date.toISOString().slice(0,10));
-      const values = curve.map(p=>p.balance);
-      if (lineChart) lineChart.destroy();
-      lineChart = new Chart(el('#chartLine'), {
-        type:'line',
-        data:{ labels, datasets:[{ label:'Solde projeté', data:values, tension:0.3 }] },
-        options:{ responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:false } } }
-      });
-    }
-    function renderBars(labels, income, expense){
-      if (barsChart) barsChart.destroy();
-      barsChart = new Chart(el('#chartBars'), {
-        type:'bar',
-        data:{
-          labels,
-          datasets:[
-            { label:'Revenus', data:income, stack:'stack1' },
-            { label:'Dépenses', data:expense.map(v=>-v), stack:'stack1' }
-          ]
-        },
-        options:{
-          responsive:true,
-          plugins:{ legend:{ position:'top' } },
-          scales:{ y:{ beginAtZero:true, ticks:{ callback:(v)=>v } } }
-        }
-      });
+    return { labels, income, expense };
+  }
+
+  function monthlyKpis(entries){
+    let inc=0, fix=0, vari=0, cred=0;
+
+    for(const e of entries){
+      const amt = parseFloat(e.amount||"0");
+      if(!isFinite(amt) || amt===0) continue;
+
+      let factor=0;
+      if(e.rec==="weekly") factor = 4.333;
+      else if(e.rec==="monthly" || !e.rec) factor = 1;
+      else if(e.rec==="quarterly") factor = 1/3;
+      else if(e.rec==="yearly") factor = 1/12;
+
+      const mAmt = amt * factor;
+
+      if(e.type==="income") inc += mAmt;
+      else {
+        if(e.cat==="fixed") fix += mAmt;
+        else if(e.cat==="credit") cred += mAmt;
+        else vari += mAmt;
+      }
     }
 
-    // ================ Compute All (LOCAL) ================
-    function computeAllLocal(){
-      const base = parseFloat(el('#base').value||'0') || 0;
-      const cur = el('#currency').value || '$';
-      const modeDays = el('#mode365').checked ? 365 : 90;
-      el('#horizon').value = modeDays;
+    const totalExp = fix + vari + cred;
+    const reste = inc - totalExp;
+
+    return {
+      inc,
+      fix,
+      vari,
+      cred,
+      totalExp,
+      reste,
+      debtPct: inc>0 ? (cred/inc)*100 : 0,
+      savePct: inc>0 ? Math.max(reste,0)/inc*100 : 0
+    };
+  }
+
+
+  /* ============================================================
+     6 — RENDER CHARTS
+  ============================================================ */
+
+  let lineChart, barsChart;
+
+  function renderLine(curve){
+    const labels = curve.map(p => p.date.toISOString().slice(0,10));
+    const values = curve.map(p => p.balance);
+
+    if(lineChart) lineChart.destroy();
+
+    lineChart = new Chart(el("#chartLine"), {
+      type:"line",
+      data:{
+        labels,
+        datasets:[
+          { label:"Solde projeté", data:values, tension:0.3 }
+        ]
+      },
+      options:{
+        plugins:{ legend:{display:false} },
+        scales:{ y:{ beginAtZero:false } }
+      }
+    });
+  }
+
+  function renderBars(labels, income, expense){
+    if(barsChart) barsChart.destroy();
+
+    barsChart = new Chart(el("#chartBars"), {
+      type:"bar",
+      data:{
+        labels,
+        datasets:[
+          { label:"Revenus", data:income, stack:"s1" },
+          { label:"Dépenses", data:expense.map(v=>-v), stack:"s1" }
+        ]
+      },
+      options:{
+        plugins:{ legend:{position:"top"} },
+        scales:{ y:{beginAtZero:true} }
+      }
+    });
+  }
+
+
+  /* ============================================================
+     7 — EXPORT PDF
+  ============================================================ */
+
+  // Identique à ta version → encapsulé dans exportPdf()
+  async function exportPdf(){
+    try{
+      const base = parseFloat(el("#base").value||"0")||0;
+      const cur = el("#currency").value||"$";
+      const modeDays = el("#mode365").checked ? 365 : 90;
 
       const rawEntries = collectEntries();
       const entries = applyScenario(rawEntries);
-
       const curve = projectDaily(base, entries, modeDays);
-
       const k = monthlyKpis(entries);
-      el('#kpiDebt').textContent = isFinite(k.debtPct) ? `${k.debtPct.toFixed(1)}%` : '—';
-      el('#kpiRav').textContent = fmtMoney(k.reste, cur);
-      el('#kpiSave').textContent = isFinite(k.savePct) ? `${k.savePct.toFixed(1)}%` : '—';
-
-      const firstNeg = curve.findIndex(p => p.balance < 0);
-      el('#alert').textContent = firstNeg === -1
-        ? "✅ Aucun risque de découvert détecté sur l’horizon choisi."
-        : `⚠️ Risque de découvert dans ${firstNeg} jours.`;
-
-      const idx = d => Math.min(d, curve.length-1);
-      el('#m1').textContent = fmtMoney(curve[idx(30)].balance, cur);
-      el('#m6').textContent = fmtMoney(curve[idx(180)].balance, cur);
-      el('#m12').textContent = fmtMoney(curve[idx(365)].balance, cur);
-
-      renderLine(curve);
-      const mt = monthlyTotals(entries);
-      renderBars(mt.labels, mt.income, mt.expense);
-
-      const d30 = curve[Math.min(30, curve.length-1)].balance;
-      const d60 = curve[Math.min(60, curve.length-1)].balance;
-      const d90 = curve[Math.min(90, curve.length-1)].balance;
-      const subject = encodeURIComponent("Projection cashflow — Serenity Web");
-      const body = encodeURIComponent(
-`Bonjour,
-Je viens de tester Serenity Web.
-
-Solde initial: ${fmtMoney(base, cur)}
-Indicateurs mensuels:
-• Taux d’endettement (crédit/revenus): ${isFinite(k.debtPct)?k.debtPct.toFixed(1):'—'}%
-• Reste à vivre: ${fmtMoney(k.reste, cur)}
-• Taux d’épargne: ${isFinite(k.savePct)?k.savePct.toFixed(1):'—'}%
-
-Projection (${modeDays} jours):
-• 30 jours: ${fmtMoney(d30, cur)}
-• 60 jours: ${fmtMoney(d60, cur)}
-• 90 jours: ${fmtMoney(d90, cur)}
-${firstNeg === -1 ? "Aucun découvert prévu." : "Risque de découvert dans " + firstNeg + " jours."}
-
-Je souhaite être informé quand la version Pro (sauvegarde, alertes, PDF) sera disponible.
-Merci !`
-      );
-      el('#mailtoCta').href = `mailto:sinlocka@gmail.com?subject=${subject}&body=${body}`;
-    }
-
-    // ================ Compute All via API + fallback ================
-    function applyCalcResultToUI({ data, base, cur, modeDays, entries }){
-      const k = data.kpi || {};
-      const curve = data.curve || [];
-      const milestones = data.milestones || {};
-
-      if (!curve.length){
-        computeAllLocal();
-        return;
-      }
-
-      const debtPct = k.debt_pct ?? k.debtPct;
-      const reste = (k.reste_a_vivre !== undefined) ? k.reste_a_vivre : (k.reste ?? 0);
-      const savePct = k.save_pct ?? k.savePct;
-
-      el('#kpiDebt').textContent = isFinite(debtPct) ? `${debtPct.toFixed(1)}%` : '—';
-      el('#kpiRav').textContent = fmtMoney(reste, cur);
-      el('#kpiSave').textContent = isFinite(savePct) ? `${savePct.toFixed(1)}%` : '—';
-
-      const firstNeg = curve.findIndex(p => (p.balance ?? 0) < 0);
-      el('#alert').textContent = firstNeg === -1
-        ? "✅ Aucun risque de découvert détecté sur l’horizon choisi."
-        : `⚠️ Risque de découvert dans ${firstNeg} jours.`;
-
-      const idx = d => Math.min(d, curve.length-1);
-      const m1 = milestones.m1 !== undefined ? milestones.m1 : curve[idx(30)].balance;
-      const m6 = milestones.m6 !== undefined ? milestones.m6 : curve[idx(180)].balance;
-      const m12 = milestones.m12 !== undefined ? milestones.m12 : curve[idx(365)].balance;
-      el('#m1').textContent = fmtMoney(m1, cur);
-      el('#m6').textContent = fmtMoney(m6, cur);
-      el('#m12').textContent = fmtMoney(m12, cur);
-
-      const labels = curve.map(p => p.date);
-      const values = curve.map(p => p.balance);
-      if (lineChart) lineChart.destroy();
-      lineChart = new Chart(el('#chartLine'), {
-        type:'line',
-        data:{ labels, datasets:[{ label:'Solde projeté', data:values, tension:0.3 }] },
-        options:{ responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:false } } }
-      });
-
-      const mt = monthlyTotals(entries);
-      renderBars(mt.labels, mt.income, mt.expense);
-
-      const idx30 = idx(30), idx60 = idx(60), idx90 = idx(90);
-      const d30 = curve[idx30].balance;
-      const d60 = curve[idx60].balance;
-      const d90 = curve[idx90].balance;
-      const subject = encodeURIComponent("Projection cashflow — Serenity Web");
-      const body = encodeURIComponent(
-`Bonjour,
-Je viens de tester Serenity Web.
-
-Solde initial: ${fmtMoney(base, cur)}
-Indicateurs mensuels:
-• Taux d’endettement (crédit/revenus): ${isFinite(debtPct)?debtPct.toFixed(1):'—'}%
-• Reste à vivre: ${fmtMoney(reste, cur)}
-• Taux d’épargne: ${isFinite(savePct)?savePct.toFixed(1):'—'}%
-
-Projection (${modeDays} jours):
-• 30 jours: ${fmtMoney(d30, cur)}
-• 60 jours: ${fmtMoney(d60, cur)}
-• 90 jours: ${fmtMoney(d90, cur)}
-${firstNeg === -1 ? "Aucun découvert prévu." : "Risque de découvert dans " + firstNeg + " jours."}
-
-Je souhaite être informé quand la version Pro (sauvegarde, alertes, PDF) sera disponible.
-Merci !`
-      );
-      el('#mailtoCta').href = `mailto:sinlocka@gmail.com?subject=${subject}&body=${body}`;
-    }
-
-    async function computeAll(){
-      const base = parseFloat(el('#base').value||'0') || 0;
-      const cur = el('#currency').value || '$';
-      const modeDays = el('#mode365').checked ? 365 : 90;
-      el('#horizon').value = modeDays;
-
-      const rawEntries = collectEntries();
-      const entries = applyScenario(rawEntries);
 
       const payload = {
+        scenario_name: el("#scenarioName").value,
         base,
         currency: cur,
         horizon_days: modeDays,
-        entries: entries.map(e => ({
-          type: e.type,
-          amount: parseFloat(e.amount || '0') || 0,
-          rec: e.rec || 'monthly',
-          cat: e.cat || 'fixed',
-          start: e.start || null
-        })),
-        scenario: {
-          var_mul: scenario.varMul ?? 1.0,
-          extra_income: scenario.extraIncome ?? 0,
-          extra_credit: scenario.extraCredit ?? 0
+        entries,
+        curve: curve.map(p=>({
+          date:p.date.toISOString().slice(0,10),
+          balance:p.balance
+        }))
+      };
+        // Bind bouton export PDF
+        if (el("#exportPdf")) {
+          el("#exportPdf").addEventListener("click", exportPdf);
         }
-      };
 
-      try {
-        const res = await fetch(`${API_BASE}/api/calc`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        applyCalcResultToUI({ data, base, cur, modeDays, entries });
-      } catch (err) {
-        console.warn('API /calc indisponible, fallback local:', err);
-        computeAllLocal();
-      }
+      
+      const res = await fetch(API_BASE + "/api/export-pdf", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify(payload)
+      });
+
+      if(!res.ok) throw new Error("Erreur API PDF");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href=url;
+      a.download="serenity-web-projection.pdf";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    catch(e){
+      alert("Export PDF impossible : " + e.message);
+    }
+  }
+
+
+  /* ============================================================
+     8 — PERSISTENCE LOCALSTORAGE
+  ============================================================ */
+
+  const LS_KEY = "serenityweb_state_v2";
+
+  function saveState(state){
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+    catch(e){}
+  }
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e){ return null; }
+  }
+
+
+  /* ============================================================
+     9 — COMPUTE (FUSION API + LOCAL)
+  ============================================================ */
+
+  async function computeAll(){
+
+    const scenarioName = el("#scenarioName").value;
+    const base = parseFloat(el("#base").value||"0")||0;
+    const cur = el("#currency").value||"$";
+    const modeDays = el("#mode365").checked ? 365 : 90;
+
+    const rawEntries = collectEntries();
+    const entries = applyScenario(rawEntries);
+
+    let result = await computeViaApi(base, cur, modeDays, entries);
+
+    if(!result){
+      const curve = projectDaily(base, entries, modeDays);
+      const k = monthlyKpis(entries);
+      const mt = monthlyTotals(entries);
+
+      result = {
+        curve: curve.map(p=>({
+          date:p.date.toISOString().slice(0,10),
+          balance:p.balance
+        })),
+        kpi: {
+          debt_pct: k.debtPct,
+          reste_a_vivre: k.reste,
+          save_pct: k.savePct,
+          inc: k.inc,
+          fix: k.fix,
+          vari: k.vari,
+          cred: k.cred,
+          total_exp: k.totalExp
+        },
+        monthly_totals: mt,
+      };
     }
 
-    // ================ Persistence + Wiring ================
-    function persistAndCompute(){
-      const state = {
-        base: el('#base').value,
-        currency: el('#currency').value,
-        mode365: el('#mode365').checked,
-        rows: collectEntries(),
-        scenario
-      };
-      saveState(state);
-      setActiveChip();
-      computeAll();
-    }
+    const curve = result.curve;
+    const k = result.kpi;
 
-    el('#compute').onclick = persistAndCompute;
-    el('#resetScn').onclick = () => {
-      scenario={varMul:1, extraIncome:0, extraCredit:0};
-      setActiveChip();
+    el("#kpiDebt").textContent = `${k.debt_pct.toFixed(1)}%`;
+    el("#kpiRav").textContent = fmtMoney(k.reste_a_vivre, cur);
+    el("#kpiSave").textContent = `${k.save_pct.toFixed(1)}%`;
+
+    function idx(d){ return Math.min(d, curve.length-1); }
+
+    el("#m1").textContent  = fmtMoney(curve[idx(30)].balance, cur);
+    el("#m6").textContent  = fmtMoney(curve[idx(180)].balance, cur);
+    el("#m12").textContent = fmtMoney(curve[idx(365)].balance, cur);
+
+    const firstNeg = curve.findIndex(p=>p.balance<0);
+    el("#alert").textContent =
+      firstNeg===-1
+        ? "✅ Aucun risque de découvert détecté."
+        : `⚠️ Risque de découvert dans ${firstNeg} jours.`;
+
+    renderLine(curve.map(p=>({date:new Date(p.date), balance:p.balance})));
+    renderBars(
+      result.monthly_totals.labels,
+      result.monthly_totals.income,
+      result.monthly_totals.expense
+    );
+
+    const subject = encodeURIComponent("Projection cashflow — Serenity Web");
+    const body = encodeURIComponent(
+`Bonjour,
+Je viens de tester Serenity Web.
+
+Scénario : ${scenarioName}
+
+Solde initial : ${fmtMoney(base,cur)}
+
+Indicateurs :
+• Taux d’endettement : ${k.debt_pct.toFixed(1)}%
+• Reste à vivre : ${fmtMoney(k.reste_a_vivre,cur)}
+• Taux d’épargne : ${k.save_pct.toFixed(1)}%
+
+Projection :
+• 30 jours : ${fmtMoney(curve[idx(30)].balance,cur)}
+• 60 jours : ${fmtMoney(curve[idx(60)].balance,cur)}
+• 90 jours : ${fmtMoney(curve[idx(90)].balance,cur)}
+
+${firstNeg===-1 ? "Aucun découvert prévu." : "Risque de découvert dans " + firstNeg + " jours."}
+
+Merci !`
+    );
+
+    el("#mailtoCta").href = `mailto:sinlocka@gmail.com?subject=${subject}&body=${body}`;
+
+    el("#exportPdf").disabled = false;
+
+    saveState({
+      scenarioName,
+      base: el("#base").value,
+      currency: el("#currency").value,
+      mode365: el("#mode365").checked,
+      rows: collectEntries(),
+      scenario
+    });
+  }
+
+
+  /* ============================================================
+     10 — INIT + ÉVÉNEMENTS
+  ============================================================ */
+
+  el("#compute").onclick = computeAll;
+  el("#resetScn").onclick = ()=>{
+    scenario = { varMul:1, extraIncome:0, extraCredit:0 };
+    setActiveChip();
+    computeAll();
+  };
+
+  els(".chip").forEach(btn=>{
+    btn.onclick = ()=>{
+      const t = btn.dataset.scn;
+      if(t==="var-10") scenario.varMul = (scenario.varMul===0.9 ? 1 : 0.9);
+      if(t==="rev+200") scenario.extraIncome = (scenario.extraIncome===200 ? 0 : 200);
+      if(t==="cred+300") scenario.extraCredit = (scenario.extraCredit===300 ? 0 : 300);
       persistAndCompute();
     };
-    els('input[name="hmode"]').forEach(r => r.addEventListener('change', persistAndCompute));
-    el('#horizon').addEventListener('input', debounce(()=>{ 
-      const v = parseInt(el('#horizon').value||'90',10);
-      if (v>=200) { el('#mode365').checked = true; } else { el('#mode90').checked = true; }
-      persistAndCompute();
-    }, 300));
-    el('#base').addEventListener('input', debounce(persistAndCompute, 200));
-    el('#currency').addEventListener('change', persistAndCompute);
+  });
 
-    els('.chip').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const t = btn.dataset.scn;
-        if (t==='var-10') scenario.varMul = (scenario.varMul===0.9 ? 1.0 : 0.9);
-        if (t==='rev+200') scenario.extraIncome = (scenario.extraIncome===200 ? 0 : 200);
-        if (t==='cred+300') scenario.extraCredit = (scenario.extraCredit===300 ? 0 : 300);
-        persistAndCompute();
-      });
-    });
+  function persistAndCompute(){ computeAll(); }
 
-    (function init(){
-      // Réveille l'API Render en arrière-plan
-      wakeApi();
+  /* INIT */
+  (async function init(){
+    wakeApi();
 
-      const st = loadState();
-      if (st){
-        el('#base').value = st.base ?? 0;
-        el('#currency').value = st.currency || '$';
-        el('#mode365').checked = !!st.mode365;
-        el('#mode90').checked = !st.mode365;
-        scenario = st.scenario || {varMul:1, extraIncome:0, extraCredit:0};
-        (st.rows || []).forEach(r => rows.appendChild(lineRow(r)));
-      } else {
-        rows.appendChild(lineRow({type:"income", amount:2500, rec:"monthly", cat:"fixed"}));
-        rows.appendChild(lineRow({type:"expense", amount:1200, rec:"monthly", cat:"fixed"}));
-        rows.appendChild(lineRow({type:"expense", amount:300, rec:"monthly", cat:"variable"}));
-      }
-      setActiveChip();
-      computeAll();
-    })();
+    const st = loadState();
+    if(st){
+      el("#scenarioName").value = st.scenarioName || "Budget actuel";
+      el("#base").value = st.base ?? 0;
+      el("#currency").value = st.currency || "$";
 
-    // Smooth scroll
-    document.querySelectorAll('a[href^="#"]').forEach(a=>{
-      a.addEventListener('click', e=>{
-        const id = a.getAttribute('href');
-        if (id.length>1){ e.preventDefault(); document.querySelector(id).scrollIntoView({behavior:'smooth'}); }
-      });
-    });
+      el("#mode365").checked = !!st.mode365;
+      el("#mode90").checked = !st.mode365;
 
-    // ===================== EXPORT PDF (beta) =====================
+      scenario = st.scenario || scenario;
 
-    function computeScoreFromKpis(k) {
-      const revenus = k.inc || 0;
-      const total_exp = k.totalExp || k.total_exp || 0;
-      const fix = k.fix || 0;
-      const cred = k.cred || 0;
-
-      const taux_epargne = revenus > 0 ? Math.max(revenus - total_exp, 0) / revenus : 0;
-      const taux_charges = revenus > 0 ? (fix / revenus) : 0;
-      const taux_dette   = revenus > 0 ? (cred / revenus) : 0;
-
-      const comp_epargne = Math.min(taux_epargne / 0.20, 1.0);
-      const comp_charges = 1 - Math.min(taux_charges / 0.50, 1.0);
-      const comp_dette   = 1 - Math.min(taux_dette   / 0.20, 1.0);
-
-      let score = Math.round(100 * (0.4*comp_epargne + 0.3*comp_charges + 0.3*comp_dette));
-      score = Math.max(0, Math.min(100, score));
-      let level = "rouge";
-      if (score >= 85) level = "vert";
-      else if (score >= 70) level = "jaune";
-      else if (score >= 40) level = "orange";
-
-      let message = "Situation fragile — il faut reprendre le contrôle.";
-      if (level === "orange") message = "Budget sous tension — des ajustements simples peuvent aider.";
-      if (level === "jaune")  message = "Base saine — renforce ton épargne pour passer au vert.";
-      if (level === "vert")   message = "Budget serein — ton argent travaille pour toi.";
-
-      return { score, level, message, ratios: { taux_epargne, taux_charges, taux_dette } };
+      (st.rows || []).forEach(r => rows.appendChild(lineRow(r)));
+    }
+    else {
+      rows.appendChild(lineRow({ type:"income", amount:2500, rec:"monthly", cat:"fixed" }));
+      rows.appendChild(lineRow({ type:"expense", amount:1200, rec:"monthly", cat:"fixed" }));
+      rows.appendChild(lineRow({ type:"expense", amount:300, rec:"monthly", cat:"variable" }));
     }
 
-    function breakdownByCategoryFromKpis(k){
-      return [
-        { label: "Fixe",     amount: Number((k.fix||0).toFixed(2)) },
-        { label: "Variable", amount: Number((k.vari||0).toFixed(2)) },
-        { label: "Crédit",   amount: Number((k.cred||0).toFixed(2)) }
-      ];
-    }
-
-    function breakdownByRecurring(entries){
-      const sums = {"Mensuel":0, "Hebdo":0, "Ponctuel":0, "Trimestriel":0, "Annuel":0};
-      for (const e of entries){
-        const amt = parseFloat(e.amount||"0");
-        if (!isFinite(amt) || amt===0) continue;
-        const rec = e.rec || "monthly";
-        let mAmt = 0;
-        if (rec==='weekly') mAmt = amt*4.333;
-        else if (rec==='monthly') mAmt = amt;
-        else if (rec==='quarterly') mAmt = amt/3;
-        else if (rec==='yearly') mAmt = amt/12;
-        else if (rec==='oneoff') mAmt = amt;
-        if (rec==='weekly') sums["Hebdo"] += mAmt;
-        else if (rec==='monthly') sums["Mensuel"] += mAmt;
-        else if (rec==='quarterly') sums["Trimestriel"] += mAmt;
-        else if (rec==='yearly') sums["Annuel"] += mAmt;
-        else if (rec==='oneoff') sums["Ponctuel"] += mAmt;
-      }
-      return [
-        { label:"Mensuel", amount:Number(sums["Mensuel"].toFixed(2)) },
-        { label:"Hebdo", amount:Number(sums["Hebdo"].toFixed(2)) },
-        { label:"Ponctuel", amount:Number(sums["Ponctuel"].toFixed(2)) },
-        { label:"Trimestriel", amount:Number(sums["Trimestriel"].toFixed(2)) },
-        { label:"Annuel", amount:Number(sums["Annuel"].toFixed(2)) }
-      ];
-    }
-
-    function buildExportPayload({ base, cur, modeDays, entries, curve, k }){
-      const idx = d => Math.min(d, curve.length-1);
-      const milestones = {
-        m1:  Number((curve[idx(30)].balance||0).toFixed(2)),
-        m6:  Number((curve[idx(180)].balance||0).toFixed(2)),
-        m12: Number((curve[idx(365)].balance||0).toFixed(2))
-      };
-
-      const scorePack = computeScoreFromKpis(k);
-
-      const curveOut = curve.map(p => ({
-        date: p.date.toISOString().slice(0,10),
-        balance: Number((p.balance||0).toFixed(2))
-      }));
-
-      const byCat = breakdownByCategoryFromKpis(k);
-      const byRec = breakdownByRecurring(entries);
-
-      return {
-        meta: {
-          currency: cur,
-          generated_at: new Date().toISOString(),
-          horizon_days: modeDays
-        },
-        summary: {
-          score: scorePack.score,
-          level: scorePack.level,
-          message: scorePack.message,
-          solde: Number((k.inc - k.totalExp).toFixed(2)),
-          ratios: scorePack.ratios,
-          kpi: {
-            debt_pct: Number(((k.inc>0? (k.cred/k.inc)*100 : 0)).toFixed(1)),
-            reste_a_vivre: Number((k.reste||0).toFixed(2)),
-            save_pct: Number((k.savePct||0).toFixed(1)),
-            inc: Number((k.inc||0).toFixed(2)),
-            fix: Number((k.fix||0).toFixed(2)),
-            vari: Number((k.vari||0).toFixed(2)),
-            cred: Number((k.cred||0).toFixed(2)),
-            total_exp: Number((k.totalExp||0).toFixed(2))
-          }
-        },
-        milestones,
-        curve: curveOut,
-        breakdown: {
-          by_category: byCat,
-          by_recurring: byRec
-        },
-        tips: buildTipsForPdf(scorePack, k, cur),
-        disclaimer: "Ce document est fourni à titre indicatif."
-      };
-    }
-
-    function buildTipsForPdf(scorePack, k, cur){
-      const tips = [];
-      const revenus = k.inc || 0;
-      const totalExp = k.totalExp || 0;
-      const fix = k.fix || 0;
-      const cred = k.cred || 0;
-
-      const actuelleEpargne = Math.max(revenus - totalExp, 0);
-      const need20 = Math.max(0, 0.20*revenus - actuelleEpargne);
-      if (need20 > 0) tips.push(`Augmente l’épargne mensuelle de ${cur}${need20.toFixed(2)} pour viser 20 %.`);
-
-      const overFix = fix - 0.50*revenus;
-      if (overFix > 0) tips.push(`Réduis les charges fixes d’environ ${cur}${overFix.toFixed(2)} pour repasser sous 50 %.`);
-
-      const overDebt = cred - 0.20*revenus;
-      if (overDebt > 0) tips.push(`Négocie/solde ${cur}${overDebt.toFixed(2)} de mensualités pour revenir sous 20 %.`);
-
-      if (!tips.length) tips.push("Continue : maintiens ton cap et renforce progressivement l’épargne.");
-      return tips;
-    }
-
-    async function exportPdf(){
-      try {
-        const base = parseFloat(el('#base').value||'0') || 0;
-        const cur = el('#currency').value || '$';
-        const modeDays = el('#mode365').checked ? 365 : 90;
-
-        const rawEntries = collectEntries();
-        const entries = applyScenario(rawEntries);
-        const curve = projectDaily(base, entries, modeDays);
-        const k = monthlyKpis(entries);
-
-        const payload = buildExportPayload({ base, cur, modeDays, entries, curve, k });
-
-        const res = await fetch(`${API_BASE}/api/export-pdf`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(`Erreur serveur (${res.status}): ${text}`);
-        }
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'serenity-web-projection.pdf';
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
-      } catch (e) {
-        alert("Échec de l'export PDF : " + e.message);
-      }
-    }
-
-    (function wireExportBtn(){
-      const btn = el('#exportPdf');
-      if (!btn) return;
-      btn.addEventListener('click', exportPdf);
-      const _oldComputeAll = computeAll;
-      computeAll = async function(){
-        await _oldComputeAll();
-        btn.disabled = false;
-      };
-    })();
+    setActiveChip();
+    computeAll();
+  })();
 
   </script>
+
 </body>
 </html>
