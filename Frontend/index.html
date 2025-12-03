@@ -697,7 +697,11 @@
           balance:p.balance
         }))
       };
-      el("#exportPdf").addEventListener("click", exportPdf);
+        // Bind bouton export PDF
+        if (el("#exportPdf")) {
+          el("#exportPdf").addEventListener("click", exportPdf);
+        }
+
       
       const res = await fetch(API_BASE + "/api/export-pdf", {
         method:"POST",
