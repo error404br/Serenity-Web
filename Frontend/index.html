@@ -318,6 +318,23 @@
     }
   }
 
+  /* ============================================================
+     3bis — Ping via bot telegram
+  ============================================================ */
+
+    async function notifyVisit() {
+  try {
+    await fetch(API_BASE + "/api/ping", {
+      method: "POST",
+      mode: "no-cors"
+    });
+  } catch(e) {
+    console.warn("Ping fail", e);
+  }
+}
+
+notifyVisit();
+
 
   /* ============================================================
      3 — DYNAMIC ROWS (ENTRIES) AVEC LIBELLÉ
