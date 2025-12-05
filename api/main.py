@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers import pdf_export, calc
+from routers import ping
+app.include_router(ping.router, prefix="/api", tags=["monitoring"])
+
 
 app = FastAPI(title="Serenity Web API", version="1.0.0")
 
