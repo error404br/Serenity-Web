@@ -4,4 +4,4 @@ Jinja2==3.1.4
 WeasyPrint==62.3
 pydantic==2.9.2
 python-multipart==0.0.12
-
+httpx
