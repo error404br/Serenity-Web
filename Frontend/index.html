@@ -73,7 +73,7 @@
     <!-- COLONNE PARAMÈTRES -->
     <div class="card p-6">
 
-      <!-- NOUVEAU: Nom du scénario -->
+      <!-- Nom du scénario -->
       <h2 class="text-xl font-bold mb-2">Nom du scénario</h2>
       <input id="scenarioName" type="text"
              class="w-full border rounded-xl p-2 mb-6"
@@ -117,20 +117,22 @@
           <p class="text-[11px] text-slate-500 mt-1">Basculer 90j/12m ajuste automatiquement.</p>
         </div>
       </div>
-      <!-- Lignes de revenus/dépenses -->
 
+      <!-- Lignes de revenus/dépenses -->
       <div class="mt-6">
         <div class="flex items-center justify-between mb-2">
           <h3 class="font-semibold">Lignes de revenus/dépenses</h3>
           <button id="addRow" class="text-sm px-3 py-1 rounded-lg bg-slate-900 text-white">+ Ajouter</button>
         </div>
 
+        <!-- Header des colonnes -->
         <div class="grid grid-cols-12 gap-2 text-[12px] text-slate-500">
           <div class="col-span-2">Type</div>
           <div class="col-span-2">Montant</div>
-          <div class="col-span-3">Récurrence</div>
-          <div class="col-span-3">Catégorie</div>
-          <div class="col-span-2">Début</div>
+          <div class="col-span-3">Libellé</div>
+          <div class="col-span-2">Récurrence</div>
+          <div class="col-span-2">Catégorie</div>
+          <div class="col-span-1">Début</div>
         </div>
 
         <div id="rows" class="space-y-3 mt-1"></div>
@@ -281,11 +283,10 @@
 
   <!-- SCRIPT PRINCIPAL : LOGIQUE SERENITY WEB -->
   <script>
-
   /* ============================================================
      1 — SHORTCUTS + UTIL
   ============================================================ */
-  const el = s => document.querySelector(s);
+  const el  = s => document.querySelector(s);
   const els = s => Array.from(document.querySelectorAll(s));
 
   const today0 = () => { const d=new Date(); d.setHours(0,0,0,0); return d; };
@@ -302,7 +303,6 @@
   /* ============================================================
      2 — API CONFIG + WAKE
   ============================================================ */
-
   const API_BASE = (() => {
     const host = window.location.hostname;
     if (host === "localhost" || host === "127.0.0.1") return "http://127.0.0.1:8000";
@@ -320,9 +320,8 @@
 
 
   /* ============================================================
-     3 — DYNAMIC ROWS (ENTRIES)
+     3 — DYNAMIC ROWS (ENTRIES) AVEC LIBELLÉ
   ============================================================ */
-
   const rows = el("#rows");
 
   function lineRow(defaults={}) {
@@ -337,7 +336,9 @@
 
       <input class="col-span-2 border rounded-xl p-2 amount" type="number" step="0.01">
 
-      <select class="col-span-3 border rounded-xl p-2 rec">
+      <input class="col-span-3 border rounded-xl p-2 label" type="text" placeholder="Libellé">
+
+      <select class="col-span-2 border rounded-xl p-2 rec">
         <option value="oneoff">Ponctuel</option>
         <option value="weekly">Hebdo</option>
         <option value="monthly" selected>Mensuel</option>
@@ -345,30 +346,31 @@
         <option value="yearly">Annuel</option>
       </select>
 
-      <select class="col-span-3 border rounded-xl p-2 cat">
+      <select class="col-span-2 border rounded-xl p-2 cat">
         <option value="fixed">Fixe</option>
         <option value="variable">Variable</option>
         <option value="credit">Crédit</option>
       </select>
 
-      <div class="col-span-2 flex gap-2">
+      <div class="col-span-1 flex gap-2">
         <input class="border rounded-xl p-2 start flex-1" type="date">
         <button class="btn-del" title="Supprimer">🗑</button>
       </div>
     `;
 
-    if(defaults.type) wrap.querySelector(".type").value = defaults.type;
+    if(defaults.type)   wrap.querySelector(".type").value   = defaults.type;
     if(defaults.amount!=null) wrap.querySelector(".amount").value = defaults.amount;
-    if(defaults.rec) wrap.querySelector(".rec").value = defaults.rec;
-    if(defaults.cat) wrap.querySelector(".cat").value = defaults.cat;
-    if(defaults.start) wrap.querySelector(".start").value = defaults.start;
+    if(defaults.label)  wrap.querySelector(".label").value  = defaults.label;
+    if(defaults.rec)    wrap.querySelector(".rec").value    = defaults.rec;
+    if(defaults.cat)    wrap.querySelector(".cat").value    = defaults.cat;
+    if(defaults.start)  wrap.querySelector(".start").value  = defaults.start;
 
     wrap.querySelector(".btn-del").addEventListener("click", ()=>{
       wrap.remove();
       persistAndCompute();
     });
 
-    wrap.querySelectorAll(".type, .amount, .rec, .cat, .start")
+    wrap.querySelectorAll(".type, .amount, .label, .rec, .cat, .start")
       .forEach(inp=>{
         inp.addEventListener("input", debounce(persistAndCompute,200));
         inp.addEventListener("change", debounce(persistAndCompute,200));
@@ -384,19 +386,19 @@
 
   function collectEntries() {
     return [...rows.children].map(r=>({
-      type: r.querySelector(".type").value,
-      amount: r.querySelector(".amount").value,
-      rec: r.querySelector(".rec").value,
-      cat: r.querySelector(".cat").value,
+      type:  r.querySelector(".type").value,
+      amount:r.querySelector(".amount").value,
+      label: r.querySelector(".label").value,
+      rec:   r.querySelector(".rec").value,
+      cat:   r.querySelector(".cat").value,
       start: r.querySelector(".start").value
     }));
   }
 
 
   /* ============================================================
-     4 — SCÉNARIOS RAPIDES (var, revenu+, crédit+)
+     4 — SCÉNARIOS RAPIDES
   ============================================================ */
-
   let scenario = { varMul:1.0, extraIncome:0, extraCredit:0 };
 
   function applyScenario(entries){
@@ -417,7 +419,8 @@
         amount:scenario.extraIncome,
         rec:"monthly",
         cat:"fixed",
-        start:new Date().toISOString().slice(0,10)
+        start:new Date().toISOString().slice(0,10),
+        label:"Revenu supplémentaire"
       });
     }
 
@@ -427,7 +430,8 @@
         amount:scenario.extraCredit,
         rec:"monthly",
         cat:"credit",
-        start:new Date().toISOString().slice(0,10)
+        start:new Date().toISOString().slice(0,10),
+        label:"Crédit supplémentaire"
       });
     }
 
@@ -443,9 +447,8 @@
 
 
   /* ============================================================
-     5 — CALCUL (LOCAL + API)
+     5 — CALCUL (API + LOCAL)
   ============================================================ */
-
   function buildPayloadForApi(base, cur, modeDays, entries){
     return {
       scenario_name: el("#scenarioName").value,
@@ -474,12 +477,10 @@
     }
   }
 
-  /* ------- CALCUL LOCAL ------- */
-
   function generateEvents(entries, horizonDays){
     const start = today0();
-    const end = addDays(start, horizonDays);
-    const evts = [];
+    const end   = addDays(start, horizonDays);
+    const evts  = [];
 
     for(const e of entries){
       const amt = parseFloat(e.amount||"0");
@@ -491,17 +492,16 @@
       if(d < start) d = new Date(start);
 
       const rec = e.rec||"monthly";
-
       const push = dt => { if(dt<=end) evts.push({date:new Date(dt), delta:sign*amt}); };
 
       if(rec==="oneoff"){ push(d); }
       else {
         while(d<=end){
           push(d);
-          if(rec==="weekly") d.setDate(d.getDate()+7);
-          else if(rec==="monthly") d.setMonth(d.getMonth()+1);
+          if(rec==="weekly")      d.setDate(d.getDate()+7);
+          else if(rec==="monthly")   d.setMonth(d.getMonth()+1);
           else if(rec==="quarterly") d.setMonth(d.getMonth()+3);
-          else if(rec==="yearly") d.setFullYear(d.getFullYear()+1);
+          else if(rec==="yearly")    d.setFullYear(d.getFullYear()+1);
         }
       }
     }
@@ -512,8 +512,8 @@
 
   function projectDaily(base, entries, horizonDays){
     const start = today0();
-    const evts = generateEvents(entries, horizonDays);
-    const out = [];
+    const evts  = generateEvents(entries, horizonDays);
+    const out   = [];
     let bal = base, i = 0;
 
     for(let d=0; d<=horizonDays; d++){
@@ -532,12 +532,12 @@
     const start = today0();
     const labels = [];
     const income = [];
-    const expense = [];
+    const expense= [];
     let d = new Date(start.getFullYear(), start.getMonth(), 1);
 
     for(let m=0; m<12; m++){
       const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
-      const monthEnd = new Date(d.getFullYear(), d.getMonth()+1, 0);
+      const monthEnd   = new Date(d.getFullYear(), d.getMonth()+1, 0);
 
       let inc=0, exp=0;
 
@@ -547,7 +547,7 @@
 
         const rec = e.rec||"monthly";
         const typ = e.type;
-        const st = e.start ? new Date(e.start) : start;
+        const st  = e.start ? new Date(e.start) : start;
         st.setHours(0,0,0,0);
 
         let add = 0;
@@ -601,14 +601,14 @@
 
       if(e.type==="income") inc += mAmt;
       else {
-        if(e.cat==="fixed") fix += mAmt;
+        if(e.cat==="fixed")  fix  += mAmt;
         else if(e.cat==="credit") cred += mAmt;
         else vari += mAmt;
       }
     }
 
     const totalExp = fix + vari + cred;
-    const reste = inc - totalExp;
+    const reste    = inc - totalExp;
 
     return {
       inc,
@@ -624,9 +624,8 @@
 
 
   /* ============================================================
-     6 — RENDER CHARTS
+     6 — CHARTS
   ============================================================ */
-
   let lineChart, barsChart;
 
   function renderLine(curve){
@@ -639,9 +638,7 @@
       type:"line",
       data:{
         labels,
-        datasets:[
-          { label:"Solde projeté", data:values, tension:0.3 }
-        ]
+        datasets:[ { label:"Solde projeté", data:values, tension:0.3 } ]
       },
       options:{
         plugins:{ legend:{display:false} },
@@ -671,12 +668,10 @@
 
 
   /* ============================================================
-     7 — EXPORT PDF (payload complet pour l’API existante)
+     7 — EXPORT PDF (payload complet)
   ============================================================ */
-
-  // Calcule un score global à partir des KPI (même logique que côté API)
   function computeScoreFromKpis(k) {
-    const revenus = k.inc || 0;
+    const revenus      = k.inc || 0;
     const taux_epargne = revenus > 0 ? Math.max(revenus - k.totalExp, 0) / revenus : 0;
     const taux_charges = revenus > 0 ? (k.fix / revenus) : 0;
     const taux_dette   = revenus > 0 ? (k.cred / revenus) : 0;
@@ -701,16 +696,14 @@
     return { score, level, message, ratios: { taux_epargne, taux_charges, taux_dette } };
   }
 
-  // Répartition par catégorie à partir des KPI
   function breakdownByCategoryFromKpis(k){
     return [
-      { label: "Fixe",     amount: Number((k.fix || 0).toFixed(2)) },
+      { label: "Fixe",     amount: Number((k.fix  || 0).toFixed(2)) },
       { label: "Variable", amount: Number((k.vari || 0).toFixed(2)) },
       { label: "Crédit",   amount: Number((k.cred || 0).toFixed(2)) }
     ];
   }
 
-  // Répartition par récurrence à partir des entrées
   function breakdownByRecurring(entries){
     const sum = { "Mensuel":0, "Hebdo":0, "Ponctuel":0, "Trimestriel":0, "Annuel":0 };
 
@@ -742,24 +735,20 @@
     ];
   }
 
-  // Conseils simples pour la page 2 du PDF
   function buildTipsForPdf(scorePack, k, cur){
     const tips = [];
     const revenus = k.inc || 0;
 
-    // 1) Atteindre 20 % d’épargne
     const need20 = Math.max(0, 0.20*revenus - Math.max(revenus - k.totalExp, 0));
     if (need20 > 0) {
       tips.push(`Augmente l’épargne mensuelle d’environ ${cur}${need20.toFixed(2)} pour viser 20 %.`);
     }
 
-    // 2) Charges fixes sous 50 %
     const overFix = k.fix - 0.50*revenus;
     if (overFix > 0) {
       tips.push(`Réduis les charges fixes d’environ ${cur}${overFix.toFixed(2)} pour repasser sous 50 % des revenus.`);
     }
 
-    // 3) Crédit sous 20 %
     const overDebt = k.cred - 0.20*revenus;
     if (overDebt > 0) {
       tips.push(`Négocie ou solde environ ${cur}${overDebt.toFixed(2)} de mensualités pour revenir sous 20 % de crédit.`);
@@ -771,7 +760,6 @@
     return tips;
   }
 
-  // Payload complet attendu par l’API /api/export-pdf (meta, summary, breakdown…)
   function buildExportPayload({ base, cur, modeDays, entries, curve, k, scenarioName }){
     const idx = d => Math.min(d, curve.length-1);
 
@@ -805,14 +793,14 @@
         solde: Number((k.inc - k.totalExp).toFixed(2)),
         ratios: scorePack.ratios,
         kpi: {
-          debt_pct: Number(((k.inc>0 ? (k.cred/k.inc)*100 : 0)).toFixed(1)),
-          reste_a_vivre: Number((k.reste   || 0).toFixed(2)),
-          save_pct:      Number((k.savePct || 0).toFixed(1)),
-          inc:           Number((k.inc     || 0).toFixed(2)),
-          fix:           Number((k.fix     || 0).toFixed(2)),
-          vari:          Number((k.vari    || 0).toFixed(2)),
-          cred:          Number((k.cred    || 0).toFixed(2)),
-          total_exp:     Number((k.totalExp|| 0).toFixed(2))
+          debt_pct:     Number(((k.inc>0 ? (k.cred/k.inc)*100 : 0)).toFixed(1)),
+          reste_a_vivre:Number((k.reste   || 0).toFixed(2)),
+          save_pct:     Number((k.savePct || 0).toFixed(1)),
+          inc:          Number((k.inc     || 0).toFixed(2)),
+          fix:          Number((k.fix     || 0).toFixed(2)),
+          vari:         Number((k.vari    || 0).toFixed(2)),
+          cred:         Number((k.cred    || 0).toFixed(2)),
+          total_exp:    Number((k.totalExp|| 0).toFixed(2))
         }
       },
       milestones,
@@ -826,11 +814,10 @@
     };
   }
 
-  // Appel API + téléchargement du PDF
   async function exportPdf(){
     try{
-      const base = parseFloat(el("#base").value || "0") || 0;
-      const cur = el("#currency").value || "$";
+      const base   = parseFloat(el("#base").value || "0") || 0;
+      const cur    = el("#currency").value || "$";
       const modeDays = el("#mode365").checked ? 365 : 90;
       const scenarioName = el("#scenarioName").value || "Budget actuel";
 
@@ -865,7 +852,6 @@
     }
   }
 
-  // Bind du bouton Export PDF (une seule fois)
   const exportBtn = el("#exportPdf");
   if (exportBtn) {
     exportBtn.addEventListener("click", exportPdf);
@@ -875,7 +861,6 @@
   /* ============================================================
      8 — PERSISTENCE LOCALSTORAGE
   ============================================================ */
-
   const LS_KEY = "serenityweb_state_v2";
 
   function saveState(state){
@@ -892,25 +877,24 @@
 
 
   /* ============================================================
-     9 — COMPUTE (FUSION API + LOCAL)
+     9 — COMPUTE GLOBAL
   ============================================================ */
-
   async function computeAll(){
 
     const scenarioName = el("#scenarioName").value;
-    const base = parseFloat(el("#base").value||"0")||0;
-    const cur = el("#currency").value||"$";
+    const base   = parseFloat(el("#base").value||"0")||0;
+    const cur    = el("#currency").value||"$";
     const modeDays = el("#mode365").checked ? 365 : 90;
 
     const rawEntries = collectEntries();
-    const entries = applyScenario(rawEntries);
+    const entries    = applyScenario(rawEntries);
 
     let result = await computeViaApi(base, cur, modeDays, entries);
 
     if(!result){
       const curve = projectDaily(base, entries, modeDays);
-      const k = monthlyKpis(entries);
-      const mt = monthlyTotals(entries);
+      const k     = monthlyKpis(entries);
+      const mt    = monthlyTotals(entries);
 
       result = {
         curve: curve.map(p=>({
@@ -918,29 +902,29 @@
           balance:p.balance
         })),
         kpi: {
-          debt_pct: k.debtPct,
-          reste_a_vivre: k.reste,
-          save_pct: k.savePct,
-          inc: k.inc,
-          fix: k.fix,
-          vari: k.vari,
-          cred: k.cred,
-          total_exp: k.totalExp
+          debt_pct:     k.debtPct,
+          reste_a_vivre:k.reste,
+          save_pct:     k.savePct,
+          inc:          k.inc,
+          fix:          k.fix,
+          vari:         k.vari,
+          cred:         k.cred,
+          total_exp:    k.totalExp
         },
         monthly_totals: mt,
       };
     }
 
     const curve = result.curve;
-    const k = result.kpi;
+    const k     = result.kpi;
 
     el("#kpiDebt").textContent = `${k.debt_pct.toFixed(1)}%`;
-    el("#kpiRav").textContent = fmtMoney(k.reste_a_vivre, cur);
+    el("#kpiRav").textContent  = fmtMoney(k.reste_a_vivre, cur);
     el("#kpiSave").textContent = `${k.save_pct.toFixed(1)}%`;
 
-    function idx(d){ return Math.min(d, curve.length-1); }
+    const idx = d => Math.min(d, curve.length-1);
 
-    el("#m1").textContent  = fmtMoney(curve[idx(30)].balance, cur);
+    el("#m1").textContent  = fmtMoney(curve[idx(30)].balance,  cur);
     el("#m6").textContent  = fmtMoney(curve[idx(180)].balance, cur);
     el("#m12").textContent = fmtMoney(curve[idx(365)].balance, cur);
 
@@ -997,9 +981,8 @@ Merci !`
 
 
   /* ============================================================
-     10 — INIT + ÉVÉNEMENTS
+     10 — INIT + EVENTS
   ============================================================ */
-
   el("#compute").onclick = computeAll;
   el("#resetScn").onclick = ()=>{
     scenario = { varMul:1, extraIncome:0, extraCredit:0 };
@@ -1010,8 +993,8 @@ Merci !`
   els(".chip").forEach(btn=>{
     btn.onclick = ()=>{
       const t = btn.dataset.scn;
-      if(t==="var-10") scenario.varMul = (scenario.varMul===0.9 ? 1 : 0.9);
-      if(t==="rev+200") scenario.extraIncome = (scenario.extraIncome===200 ? 0 : 200);
+      if(t==="var-10")   scenario.varMul      = (scenario.varMul===0.9 ? 1 : 0.9);
+      if(t==="rev+200")  scenario.extraIncome = (scenario.extraIncome===200 ? 0 : 200);
       if(t==="cred+300") scenario.extraCredit = (scenario.extraCredit===300 ? 0 : 300);
       persistAndCompute();
     };
@@ -1019,27 +1002,26 @@ Merci !`
 
   function persistAndCompute(){ computeAll(); }
 
-  /* INIT */
   (async function init(){
     wakeApi();
 
     const st = loadState();
     if(st){
       el("#scenarioName").value = st.scenarioName || "Budget actuel";
-      el("#base").value = st.base ?? 0;
-      el("#currency").value = st.currency || "$";
+      el("#base").value         = st.base ?? 0;
+      el("#currency").value     = st.currency || "$";
 
       el("#mode365").checked = !!st.mode365;
-      el("#mode90").checked = !st.mode365;
+      el("#mode90").checked  = !st.mode365;
 
       scenario = st.scenario || scenario;
 
       (st.rows || []).forEach(r => rows.appendChild(lineRow(r)));
     }
     else {
-      rows.appendChild(lineRow({ type:"income", amount:2500, rec:"monthly", cat:"fixed" }));
-      rows.appendChild(lineRow({ type:"expense", amount:1200, rec:"monthly", cat:"fixed" }));
-      rows.appendChild(lineRow({ type:"expense", amount:300, rec:"monthly", cat:"variable" }));
+      rows.appendChild(lineRow({ type:"income", amount:2500, rec:"monthly", cat:"fixed",  label:"Salaire" }));
+      rows.appendChild(lineRow({ type:"expense", amount:1200, rec:"monthly", cat:"fixed",  label:"Loyer" }));
+      rows.appendChild(lineRow({ type:"expense", amount:300,  rec:"monthly", cat:"variable",label:"Courses" }));
     }
 
     setActiveChip();
@@ -1047,6 +1029,5 @@ Merci !`
   })();
 
   </script>
-
 </body>
 </html>
