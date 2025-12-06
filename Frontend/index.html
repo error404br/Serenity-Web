@@ -132,8 +132,9 @@
           <div class="col-span-3">Libellé</div>
           <div class="col-span-2">Récurrence</div>
           <div class="col-span-2">Catégorie</div>
-          <div class="col-span-1">Début</div>
+          <div class="col-span-3">Début</div>
         </div>
+
 
         <div id="rows" class="space-y-3 mt-1"></div>
 
@@ -345,35 +346,36 @@ notifyVisit();
     const wrap = document.createElement("div");
     wrap.className = "grid grid-cols-12 gap-2 items-end";
 
-    wrap.innerHTML = `
-      <select class="col-span-2 border rounded-xl p-2 type">
-        <option value="income">Revenu</option>
-        <option value="expense">Dépense</option>
-      </select>
+wrap.innerHTML = `
+  <select class="col-span-2 border rounded-xl p-2 type">
+    <option value="income">Revenu</option>
+    <option value="expense">Dépense</option>
+  </select>
 
-      <input class="col-span-2 border rounded-xl p-2 amount" type="number" step="0.01">
+  <input class="col-span-2 border rounded-xl p-2 amount" type="number" step="0.01">
 
-      <input class="col-span-3 border rounded-xl p-2 label" type="text" placeholder="Libellé">
+  <input class="col-span-3 border rounded-xl p-2 label" type="text" placeholder="Libellé">
 
-      <select class="col-span-2 border rounded-xl p-2 rec">
-        <option value="oneoff">Ponctuel</option>
-        <option value="weekly">Hebdo</option>
-        <option value="monthly" selected>Mensuel</option>
-        <option value="quarterly">Trimestriel</option>
-        <option value="yearly">Annuel</option>
-      </select>
+  <select class="col-span-2 border rounded-xl p-2 rec">
+    <option value="oneoff">Ponctuel</option>
+    <option value="weekly">Hebdo</option>
+    <option value="monthly" selected>Mensuel</option>
+    <option value="quarterly">Trimestriel</option>
+    <option value="yearly">Annuel</option>
+  </select>
 
-      <select class="col-span-2 border rounded-xl p-2 cat">
-        <option value="fixed">Fixe</option>
-        <option value="variable">Variable</option>
-        <option value="credit">Crédit</option>
-      </select>
+  <select class="col-span-2 border rounded-xl p-2 cat">
+    <option value="fixed">Fixe</option>
+    <option value="variable">Variable</option>
+    <option value="credit">Crédit</option>
+  </select>
 
-      <div class="col-span-1 flex gap-2">
-        <input class="border rounded-xl p-2 start flex-1" type="date">
-        <button class="btn-del" title="Supprimer">🗑</button>
-      </div>
-    `;
+  <div class="col-span-3 flex items-center gap-2">
+    <input class="border rounded-xl p-2 start flex-1" type="date">
+    <button class="btn-del px-2 py-2 rounded-lg border" title="Supprimer">🗑</button>
+  </div>
+`;
+
 
     if(defaults.type)   wrap.querySelector(".type").value   = defaults.type;
     if(defaults.amount!=null) wrap.querySelector(".amount").value = defaults.amount;
